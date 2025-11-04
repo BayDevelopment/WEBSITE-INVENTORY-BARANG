@@ -1,0 +1,41 @@
+<div id="layoutSidenav_nav">
+    <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
+        <div class="sb-sidenav-menu">
+            <div class="nav">
+                <div class="sb-sidenav-menu-heading">Core</div>
+                <a class="nav-link" href="index.html">
+                    <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
+                    Dashboard
+                </a>
+                <div class="sb-sidenav-menu-heading">Master</div>
+                <a class="nav-link" href="index.html">
+                    <div class="sb-nav-link-icon"><i class="fas fa-boxes"></i></div>
+                    Data Barang
+                </a>
+                <a class="nav-link" href="index.html">
+                    <div class="sb-nav-link-icon"><i class="fas fa-arrow-circle-down"></i></div>
+                    Barang Masuk
+                </a>
+                <a class="nav-link" href="index.html">
+                    <div class="sb-nav-link-icon"><i class="fas fa-arrow-circle-up"></i></div>
+                    Barang Keluar
+                </a>
+                <a class="nav-link" href="index.html">
+                    <div class="sb-nav-link-icon"><i class="fas fa-file-alt"></i></div>
+                    Laporan Barang
+                </a>
+            </div>
+        </div>
+        <div class="sb-sidenav-footer">
+            <div class="small">Logged in as:</div>
+            <?php if (session()->get('role') === 'admin'): ?>
+                <span class="fw-bold text-white">Admin</span>
+            <?php elseif (session()->get('role') === 'staff_gudang'): ?>
+                <span class="fw-bold text-white">Staff Gudang</span>
+            <?php else: ?>
+                <span class="fw-bold text-muted">Unknown</span>
+            <?php endif; ?>
+
+        </div>
+    </nav>
+</div>
