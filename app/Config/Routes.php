@@ -17,11 +17,16 @@ $routes->get('auth/logout', 'AuthController::logout');
 
 
 // Grup khusus admin
-$routes->group('admin', ['filter' => 'auth:admin'], function ($routes) {
+$routes->group('admin', [
+    'filter' => ['auth', 'role:admin']
+], function ($routes) {
     $routes->get('dashboard', 'AdminController::dashboard');
+    $routes->get('data-barang', 'AdminController::page_barang');
 });
 
-// Grup khusus staff gudang
-$routes->group('staff', ['filter' => 'auth:staff_gudang'], function ($routes) {
+// Grup khusus staff
+$routes->group('staff', [
+    'filter' => ['auth', 'role:staff_gudang']
+], function ($routes) {
     $routes->get('dashboard', 'StaffController::dashboard');
 });

@@ -22,60 +22,95 @@ class AuthController extends BaseController
     }
     public function index()
     {
-        // kalau sudah login langsung arahkan ke dashboard
+        // Jika sudah login, cegah akses ke halaman login
         if (session()->get('isLoggedIn')) {
             $role = session()->get('role');
-            return $role === 'admin'
-                ? redirect()->to('admin/dashboard')
-                : redirect()->to('staff/dashboard');
+
+            session()->setFlashdata('error', 'Anda sudah login.');
+
+            if ($role === 'admin') {
+                return redirect()->to('admin/dashboard');
+            } elseif ($role === 'staff_gudang') {
+                return redirect()->to('staff/dashboard');
+            }
         }
+
+        // Ambil validasi dari session kalau ada
+        $validation = session()->getFlashdata('validation') ?? \Config\Services::validation();
 
         $data = [
             'title' => 'Login | Inventory Barang',
+            'validation' => $validation
         ];
+
         return view('auth', $data);
     }
 
     public function aksi_auth()
     {
+        $validationRules = [
+            'username' => [
+                'label' => 'Username',
+                'rules' => 'required|min_length[3]|max_length[50]',
+                'errors' => [
+                    'required' => 'Username wajib diisi.',
+                    'min_length' => 'Username minimal 3 karakter.',
+                    'max_length' => 'Username maksimal 50 karakter.'
+                ]
+            ],
+            'password' => [
+                'label' => 'Password',
+                'rules' => 'required|min_length[6]|max_length[50]',
+                'errors' => [
+                    'required' => 'Password wajib diisi.',
+                    'min_length' => 'Password minimal 6 karakter.',
+                    'max_length' => 'Password maksimal 50 karakter.'
+                ]
+            ]
+        ];
+
+        // Jika validasi gagal
+        if (!$this->validate($validationRules)) {
+            return redirect()->back()->withInput()->with('validation', $this->validator);
+        }
+
         $username = $this->request->getPost('username');
         $password = $this->request->getPost('password');
 
-        // cari user berdasarkan username
+        // Cari user
         $user = $this->UserModel->where('username', $username)->first();
 
         if (!$user) {
-            return redirect()->back()->with('error', 'Username tidak ditemukan.');
+            return redirect()->back()->withInput()->with('error', 'Username tidak ditemukan.');
         }
 
-        // verifikasi password
         if (!password_verify($password, $user['password'])) {
-            return redirect()->back()->with('error', 'Password salah.');
+            return redirect()->back()->withInput()->with('error', 'Password salah.');
         }
 
-        // set session login
+        // Set session login
         session()->set([
             'isLoggedIn' => true,
-            'user_id'    => $user['id'],
+            'id_user'    => $user['id_user'],
             'username'   => $user['username'],
             'role'       => $user['role'],
-            'login_time' => time(), // untuk cek durasi 7 hari
+            'login_time' => time(),
         ]);
 
-        // redirect sesuai role
+        // Redirect sesuai role
         if ($user['role'] === 'admin') {
             return redirect()->to('admin/dashboard');
         } elseif ($user['role'] === 'staff_gudang') {
             return redirect()->to('staff/dashboard');
         }
 
-        // jika role tidak dikenali
         return redirect()->to('auth')->with('error', 'Role pengguna tidak dikenali.');
     }
+
 
     public function logout()
     {
         session()->destroy();
-        return redirect()->to('auth')->with('success', 'Kamu sudah logout.');
+        return redirect()->to('auth/login')->with('success', 'Kamu sudah logout.');
     }
 }

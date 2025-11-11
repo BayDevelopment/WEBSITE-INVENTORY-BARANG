@@ -27,27 +27,30 @@ class RoleFilter implements FilterInterface
     {
         $session = session();
 
-        // jika belum login
+        // Jika belum login
         if (!$session->get('isLoggedIn')) {
             return redirect()->to('auth/login')->with('error', 'Silakan login terlebih dahulu.');
         }
 
-        // role user saat ini
         $userRole = $session->get('role');
-
-        // role yang diizinkan (misal 'admin' atau 'staff_gudang')
         $allowedRoles = $arguments ?? [];
 
-        // jika role user tidak ada dalam daftar yang diizinkan
-        if (!in_array($userRole, $allowedRoles)) {
-            // arahkan ke dashboard sesuai perannya
-            if ($userRole === 'admin') {
-                return redirect()->to('admin/dashboard')->with('error', 'Akses ditolak.');
-            } elseif ($userRole === 'staff_gudang') {
-                return redirect()->to('staff/dashboard')->with('error', 'Akses ditolak.');
-            }
+        // 1️⃣ Jika route tidak punya batasan role (fallback)
+        if (empty($allowedRoles)) {
+            return;
+        }
 
-            return redirect()->to('auth/login')->with('error', 'Akses ditolak.');
+        // 2️⃣ Jika role user tidak diizinkan
+        if (!in_array($userRole, $allowedRoles)) {
+            // Redirect otomatis ke dashboard sesuai role-nya
+            switch ($userRole) {
+                case 'admin':
+                    return redirect()->to('admin/dashboard')->with('error', 'Akses ditolak. Anda tidak memiliki izin ke halaman staff.');
+                case 'staff_gudang':
+                    return redirect()->to('staff/dashboard')->with('error', 'Akses ditolak. Anda tidak memiliki izin ke halaman admin.');
+                default:
+                    return redirect()->to('auth/login')->with('error', 'Akses ditolak.');
+            }
         }
 
         return;

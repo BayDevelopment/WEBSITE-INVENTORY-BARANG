@@ -6,105 +6,195 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Inventory Barang</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- sweetalert -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
         body {
-            background-color: #fff;
+            background: linear-gradient(135deg, #0056b3, #007bff);
+            font-family: 'Poppins', sans-serif;
             min-height: 100vh;
             overflow-x: hidden;
-            font-family: "Poppins", sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .login-container {
-            min-height: 100vh;
+        .login-wrapper {
+            display: flex;
+            max-width: 1000px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(15px);
+            border-radius: 25px;
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
         }
 
-        /* Gambar kiri full tanpa celah */
         .login-image {
-            background: url("<?= base_url('assets/img/login-logo.jpg') ?>") no-repeat center center;
-            background-size: cover;
-            min-height: 100vh;
-            padding: 0;
-            margin: 0;
+            flex: 1;
+            background: url("<?= base_url('assets/img/login-logo.jpg') ?>") center/cover no-repeat;
+            min-height: 100%;
+            display: block;
         }
 
-        /* Kartu login modern */
-        .login-card {
-            border: none;
-            border-radius: 20px;
-            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.1);
-            background-color: #fff;
+        .login-form {
+            flex: 1;
+            padding: 3rem;
+            background-color: rgba(255, 255, 255, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
         }
 
-        .login-card .card-header {
-            background-color: transparent;
-            border-bottom: none;
+        .login-form h3 {
+            font-weight: 700;
+            color: #0d6efd;
+            margin-bottom: 0.5rem;
+        }
+
+        .login-form p {
+            color: #6c757d;
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+        }
+
+        .form-floating input {
+            border-radius: 12px;
+            border: 1px solid #d1d1d1;
+            padding: 1rem;
+            font-size: 0.95rem;
+        }
+
+        .form-floating input:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+
+        .invalid-feedback {
+            font-size: 0.85rem;
         }
 
         .btn-login {
-            background: linear-gradient(135deg, #007bff, #0056b3);
+            background: linear-gradient(135deg, #0d6efd, #007bff);
             border: none;
-            transition: 0.3s ease;
+            border-radius: 50px;
+            padding: 0.8rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
         }
 
         .btn-login:hover {
-            background: linear-gradient(135deg, #0056b3, #007bff);
+            background: linear-gradient(135deg, #007bff, #0d6efd);
+            transform: translateY(-2px);
         }
 
-        /* Responsif: sembunyikan gambar di tablet/mobile */
-        @media (max-width: 991.98px) {
-            .login-image {
-                display: none;
+        .footer-text {
+            /* position: absolute; */
+            bottom: 10px;
+            width: 100%;
+            text-align: center;
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+
+        @media (max-width: 992px) {
+            .login-wrapper {
+                flex-direction: column;
+                max-width: 90%;
             }
 
-            .login-right {
-                min-height: 100vh;
-                display: flex;
-                align-items: center;
-                justify-content: center;
+            .login-image {
+                height: 180px;
+            }
+
+            .login-form {
+                padding: 2rem;
             }
         }
     </style>
 </head>
 
 <body>
-    <div class="container-fluid login-container">
-        <div class="row">
-            <!-- Gambar kiri full -->
-            <div class="col-lg-8 login-image"></div>
 
-            <!-- Form login kanan -->
-            <div class="col-lg-4 bg-white login-right d-flex align-items-center justify-content-center">
-                <div class="card login-card w-100 mx-4 mx-sm-5 my-5 shadow-blue">
-                    <div class="card-header text-center bg-transparent border-0">
-                        <h3 class="fw-bold my-3 text-primary">Selamat Datang 👋</h3>
-                        <p class="text-muted mb-0" style="font-size: 0.95rem;">
-                            Silakan masuk untuk mengelola data dan memantau sistem Inventory Barang Anda dengan mudah dan aman.
-                        </p>
-                    </div>
-                    <div class="card-body">
-                        <form>
-                            <div class="form-floating mb-3">
-                                <input type="email" class="form-control" id="inputEmail" placeholder="name@example.com">
-                                <label for="inputEmail">Email</label>
-                            </div>
-                            <div class="form-floating mb-3">
-                                <input type="password" class="form-control" id="inputPassword" placeholder="Password">
-                                <label for="inputPassword">Password</label>
-                            </div>
-                            <div class="d-grid gap-2">
-                                <button type="submit" class="btn btn-login text-white px-4 py-2 rounded-pill py-lg-2">Masuk</button>
-                            </div>
-                        </form>
-                    </div>
-                    <div class="card-footer text-center bg-transparent border-0 mt-3">
-                        <small>Developed by <a href="#" class="text-decoration-none">Bayudev</a></small>
+    <!-- SweetAlert -->
+    <?php if (session()->getFlashdata('error')) : ?>
+        <script>
+            Swal.fire({
+                toast: true,
+                icon: 'error',
+                title: '<?= session()->getFlashdata('error'); ?>',
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2500
+            });
+        </script>
+    <?php endif; ?>
+    <?php if (session()->getFlashdata('success')) : ?>
+        <script>
+            Swal.fire({
+                toast: true,
+                icon: 'success',
+                title: '<?= session()->getFlashdata('success'); ?>',
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2500
+            });
+        </script>
+    <?php endif; ?>
+
+    <div class="login-wrapper">
+        <div class="login-image"></div>
+
+        <div class="login-form">
+            <h3>Selamat Datang 👋</h3>
+            <p>Masuk untuk mengelola sistem Inventory Barang Anda dengan aman dan efisien.</p>
+
+            <form action="<?= site_url('auth/login') ?>" method="post" novalidate>
+                <?= csrf_field() ?>
+
+                <!-- Username -->
+                <div class="form-floating mb-3">
+                    <input type="text"
+                        name="username"
+                        id="inputUsername"
+                        class="form-control <?= ($validation->hasError('username') ? 'is-invalid' : '') ?>"
+                        placeholder="Username"
+                        value="<?= old('username') ?>">
+                    <label for="inputUsername"><i class="bi bi-person-fill me-2"></i>Username</label>
+                    <div class="invalid-feedback">
+                        <?= $validation->getError('username') ?>
                     </div>
                 </div>
-            </div>
 
+                <!-- Password -->
+                <div class="form-floating mb-4">
+                    <input type="password"
+                        name="password"
+                        id="inputPassword"
+                        class="form-control <?= ($validation->hasError('password') ? 'is-invalid' : '') ?>"
+                        placeholder="Password">
+                    <label for="inputPassword"><i class="bi bi-lock-fill me-2"></i>Password</label>
+                    <div class="invalid-feedback">
+                        <?= $validation->getError('password') ?>
+                    </div>
+                </div>
+
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-login text-white">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>Masuk
+                    </button>
+                </div>
+            </form>
+
+            <div class="footer-text mt-4">
+                <small>© <?= date('Y') ?> Inventory System — Built with 💙 by <strong>BayuDev</strong></small>
+            </div>
         </div>
     </div>
 

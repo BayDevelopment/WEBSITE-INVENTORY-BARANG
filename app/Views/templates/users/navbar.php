@@ -1,26 +1,47 @@
-<nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
-    <!-- Navbar Brand-->
-    <a class="navbar-brand ps-3" href="index.html">Start Bootstrap</a>
-    <!-- Sidebar Toggle-->
-    <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i class="fas fa-bars"></i></button>
-    <!-- Navbar Search-->
-    <form class="d-none d-md-inline-block form-inline ms-auto me-0 me-md-3 my-2 my-md-0">
-        <div class="input-group">
-            <input class="form-control" type="text" placeholder="Search for..." aria-label="Search for..." aria-describedby="btnNavbarSearch" />
-            <button class="btn btn-primary" id="btnNavbarSearch" type="button"><i class="fas fa-search"></i></button>
+<!-- ======= TOP NAVBAR ======= -->
+<nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark shadow-sm">
+    <!-- Brand -->
+    <a class="navbar-brand" href="<?= base_url('/'); ?>">
+        <i class="fas fa-box-open text-primary"></i>
+        <div class="brand-text">
+            <strong>Inventory</strong>
+            <small>PANEL</small>
         </div>
-    </form>
-    <!-- Navbar-->
-    <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
+    </a>
+
+    <!-- Sidebar Toggle -->
+    <button class="btn btn-link btn-sm text-white order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle">
+        <i class="fas fa-bars fa-lg"></i>
+    </button>
+
+
+    <!-- User Dropdown -->
+    <ul class="navbar-nav ms-auto me-3 me-lg-4 align-items-center">
         <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fas fa-user fa-fw"></i></a>
-            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                <li><a class="dropdown-item" href="#!">Settings</a></li>
-                <li><a class="dropdown-item" href="#!">Activity Log</a></li>
+            <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 text-white fw-semibold"
+                href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-user-circle fa-lg"></i>
+            </a>
+
+            <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3 animate__animated animate__fadeIn"
+                aria-labelledby="navbarDropdown">
                 <li>
-                    <hr class="dropdown-divider" />
+                    <h6 class="dropdown-header text-muted">Akun Saya</h6>
                 </li>
-                <li><a class="dropdown-item" href="#!">Logout</a></li>
+                <li>
+                    <a class="dropdown-item d-flex align-items-center gap-2" href="<?= base_url('settings'); ?>">
+                        <i class="fas fa-cog text-primary"></i> Pengaturan
+                    </a>
+                </li>
+                <li>
+                    <hr class="dropdown-divider">
+                </li>
+                <li>
+                    <a class="dropdown-item d-flex align-items-center gap-2 text-danger" href="#"
+                        data-bs-toggle="modal" data-bs-target="#logoutModal">
+                        <i class="fas fa-sign-out-alt"></i> Keluar
+                    </a>
+                </li>
             </ul>
         </li>
     </ul>

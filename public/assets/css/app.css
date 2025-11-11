@@ -1,0 +1,119 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
+body {
+  font-family: "Poppins", sans-serif;
+}
+.bg-light {
+  background-color: #b3b3b3 !important;
+}
+/* navbar */
+.navbar-dark .navbar-nav .nav-link {
+  transition: all 0.3s ease;
+}
+
+.navbar-dark .navbar-nav .nav-link:hover {
+  /* color: #0d6efd !important; */
+}
+
+#sidebarToggle {
+  transition: transform 0.2s ease;
+}
+
+#sidebarToggle:hover {
+  transform: rotate(10deg);
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem; /* jarak antara ikon dan teks */
+  padding: 0.75rem 1.5rem;
+  text-decoration: none;
+  color: #fff !important;
+  background: transparent;
+  transition: all 0.3s ease;
+}
+
+.navbar-brand:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-radius: 0.5rem;
+}
+
+.navbar-brand i {
+  font-size: 1.8rem;
+  color: #0d6efd; /* biru Bootstrap */
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.brand-text strong {
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.brand-text small {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #bfbfbf;
+}
+
+nav.navbar {
+  background-color: #121212;
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+}
+/* akhir navbar */
+/* footer */
+footer {
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+footer a {
+  color: #0d6efd;
+}
+
+footer a:hover {
+  text-decoration: underline;
+  color: #0a58ca;
+}
+/* akhir footer */
+/* sidebar hover */
+.custom-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #333;
+  padding: 10px 12px;
+  border-radius: 8px;
+  text-decoration: none;
+  position: relative;
+  background-image: linear-gradient(to right, #5c5c5c62 0%, #5c5c5c62 100%);
+  background-repeat: no-repeat;
+  background-size: 0% 100%;
+  transition: background-size 0.4s ease, color 0.3s ease;
+}
+
+/* Hover: animasi slide dari kiri ke kanan */
+.custom-link:hover {
+  background-size: 100% 100%;
+  color: #000;
+}
+
+/* Active state: langsung penuh */
+.custom-link.active {
+  background-size: 100% 100%;
+  color: #000;
+  font-weight: 600;
+}
+
+/* Opsional: efek klik */
+.custom-link:active {
+  transform: scale(0.98);
+}
+
+/* akhir sidebar hover */
