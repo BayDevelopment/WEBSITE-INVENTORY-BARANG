@@ -21,7 +21,17 @@ $routes->group('admin', [
     'filter' => ['auth', 'role:admin']
 ], function ($routes) {
     $routes->get('dashboard', 'AdminController::dashboard');
+    // barang
     $routes->get('data-barang', 'AdminController::page_barang');
+    $routes->get('data-barang/tambah', 'AdminController::page_tambah_barang');
+    $routes->post('data-barang/tambah', 'AdminController::aksi_tambah_admin');
+    // satuan
+    $routes->get('data-satuan', 'AdminController::page_satuan');
+    $routes->get('data-satuan/tambah', 'AdminController::page_tambah_satuan');
+    $routes->post('data-satuan/tambah', 'AdminController::aksi_tambah_satuan');
+    $routes->get('data-satuan/edit/(:num)', 'AdminController::page_edit_satuan/$1');
+    $routes->post('data-satuan/edit/(:num)', 'AdminController::aksi_edit_satuan/$1');
+    $routes->get('data-satuan/hapus/(:num)', 'AdminController::aksi_hapus_satuan/$1');
 });
 
 // Grup khusus staff

@@ -7,6 +7,7 @@
                     <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
                     Dashboard
                 </a>
+
                 <div class="sb-sidenav-menu-heading">Master</div>
                 <a class="nav-link mb-2 custom-link <?= $navlink === 'barang' ? 'active' : '' ?>" href="<?= base_url('admin/data-barang') ?>">
                     <div class="sb-nav-link-icon"><i class="fas fa-boxes"></i></div>
@@ -25,7 +26,24 @@
                     Laporan Barang
                 </a>
             </div>
+
+            <!-- Card Satuan -->
+            <div class="card bg-dark border-0 shadow-native mt-4 mx-3 rounded-4 mb-2">
+                <div class="card-body py-3 px-3 d-flex align-items-center">
+                    <div class="icon-circle bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 45px; height: 45px;">
+                        <i class="fa-solid fa-ruler-combined fa-lg"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1 fw-semibold text-white">Kelola Satuan</h6>
+                        <p class="small text-muted mb-2">Lihat & ubah data satuan</p>
+                        <a href="<?= base_url('admin/data-satuan') ?>" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1">
+                            <i class="fa-solid fa-gear me-1"></i> Buka
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
+
         <div class="sb-sidenav-footer">
             <div class="small">Logged in as:</div>
             <?php if (session()->get('role') === 'admin'): ?>

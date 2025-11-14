@@ -11,7 +11,7 @@
 
     <!-- Sidebar Toggle -->
     <button class="btn btn-link btn-sm text-white order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle">
-        <i class="fas fa-bars fa-lg"></i>
+        <i class="fa-solid fa-gear"></i>
     </button>
 
 

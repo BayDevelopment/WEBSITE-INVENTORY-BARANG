@@ -55,6 +55,20 @@
     <!-- sweealert -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+    <!-- DataTables Buttons -->
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
+
+    <!-- JSZip (untuk Excel) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
     <!-- JS Global -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     <script src="<?= base_url('assets/js/scripts.js') ?>"></script>
@@ -91,6 +105,36 @@
             if (msgWarn) Toast.fire({
                 icon: "warning",
                 title: msgWarn
+            });
+        });
+
+        // datatables
+
+        $(document).ready(function() {
+            $('#tableSatuan').DataTable({
+                responsive: true,
+                scrollX: true,
+                dom: 'Bfrtip',
+                buttons: [{
+                    extend: 'excelHtml5',
+                    title: 'Data Satuan',
+                    text: '<i class="fas fa-file-excel"></i> Export Excel',
+                    className: 'btn btn-success btn-md'
+                }],
+                language: {
+                    search: "Cari:",
+                    lengthMenu: "Tampilkan _MENU_ data",
+                    info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
+                    paginate: {
+                        first: "Awal",
+                        last: "Akhir",
+                        next: "›",
+                        previous: "‹"
+                    },
+                    zeroRecords: "Tidak ada data yang cocok",
+                    infoEmpty: "Tidak ada data yang ditampilkan",
+                    infoFiltered: "(difilter dari total _MAX_ data)"
+                }
             });
         });
     </script>

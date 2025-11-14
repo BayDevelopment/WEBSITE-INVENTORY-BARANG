@@ -13,10 +13,16 @@
             filter: brightness(0.95) contrast(1.1);
         }
     </style>
-    <h1 class="mt-4"><?= esc($breadcrumb) ?></h1>
-    <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item active"><?= esc($breadcrumb) ?></li>
-    </ol>
+    <div class="text-start mb-5">
+        <div class="d-flex align-items-center justify-content-between">
+            <div>
+                <h2 class="fw-bold text-primary mb-1">
+                    <?= esc($breadcrumb) ?>
+                </h2>
+                <p class="text-muted mb-0">Kelola data barang dibawah ini</p>
+            </div>
+        </div>
+    </div>
 
     <div class="row">
         <div class="col-12">
@@ -74,6 +80,7 @@
                         class="img-fluid empty-image"
                         style="max-width: 350px; height: auto; opacity: 0.85;">
                     <p class="text-muted mt-3 fs-5">Belum ada data barang yang tersedia.</p>
+                    <a href="<?= base_url('admin/data-barang/tambah') ?>" class="btn btn-dark btn-sm rounded-pill py-2 text-capitalize"><span><i class="fa-solid fa-file-circle-plus"></i></span> tambah barang</a>
                 </div>
             <?php endif; ?>
         </div>

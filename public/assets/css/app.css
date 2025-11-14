@@ -3,7 +3,7 @@ body {
   font-family: "Poppins", sans-serif;
 }
 .bg-light {
-  background-color: #b3b3b3 !important;
+  background-color: #ffffff !important;
 }
 /* navbar */
 .navbar-dark .navbar-nav .nav-link {
@@ -65,6 +65,11 @@ nav.navbar {
   background-color: #121212;
   padding-left: 0.75rem;
   padding-right: 0.75rem;
+}
+
+.shadow-native {
+  border-radius: 15px;
+  box-shadow: rgba(85, 85, 85, 0.2) 0px 2px 8px 0px;
 }
 /* akhir navbar */
 /* footer */
