@@ -108,8 +108,7 @@
             });
         });
 
-        // datatables
-
+        // datatables satuan
         $(document).ready(function() {
             $('#tableSatuan').DataTable({
                 responsive: true,
@@ -135,6 +134,51 @@
                     infoEmpty: "Tidak ada data yang ditampilkan",
                     infoFiltered: "(difilter dari total _MAX_ data)"
                 }
+            });
+        });
+
+        // DataTables Barang
+        $(document).ready(function() {
+            $('#tableBarang').DataTable({
+                responsive: true,
+                scrollX: true,
+                autoWidth: false,
+                dom: 'Bfrtip',
+                buttons: [{
+                    extend: 'excelHtml5',
+                    title: 'Data Barang',
+                    text: '<i class="fas fa-file-excel me-1"></i> Export Excel',
+                    className: 'btn btn-success btn-md'
+                }],
+                language: {
+                    search: "Cari:",
+                    lengthMenu: "Tampilkan MENU data",
+                    info: "Menampilkan START - END dari TOTAL data",
+                    paginate: {
+                        first: "Awal",
+                        last: "Akhir",
+                        next: "›",
+                        previous: "‹"
+                    },
+                    zeroRecords: "Tidak ada data yang cocok",
+                    infoEmpty: "Tidak ada data yang ditampilkan",
+                    infoFiltered: "(difilter dari total MAX data)"
+                },
+                columnDefs: [{
+                        // No, Satuan, Stok, Aksi dibuat center
+                        targets: [0, 3, 4, 5],
+                        className: "text-center"
+                    },
+                    {
+                        // kolom No & Aksi tidak bisa di-sort
+                        targets: [0, 5],
+                        orderable: false
+                    }
+                ],
+                // urut default berdasarkan Kode Barang (kolom index 1)
+                order: [
+                    [1, 'asc']
+                ]
             });
         });
     </script>

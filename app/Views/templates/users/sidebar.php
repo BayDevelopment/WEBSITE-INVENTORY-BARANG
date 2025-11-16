@@ -13,7 +13,7 @@
                     <div class="sb-nav-link-icon"><i class="fas fa-boxes"></i></div>
                     Data Barang
                 </a>
-                <a class="nav-link mb-2 custom-link" href="<?= base_url() ?>">
+                <a class="nav-link mb-2 custom-link <?= $navlink === 'barang masuk' ? 'active' : '' ?>" href="<?= base_url('admin/data-barang-masuk') ?>">
                     <div class="sb-nav-link-icon"><i class="fas fa-arrow-circle-down"></i></div>
                     Barang Masuk
                 </a>

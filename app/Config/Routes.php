@@ -24,7 +24,13 @@ $routes->group('admin', [
     // barang
     $routes->get('data-barang', 'AdminController::page_barang');
     $routes->get('data-barang/tambah', 'AdminController::page_tambah_barang');
-    $routes->post('data-barang/tambah', 'AdminController::aksi_tambah_admin');
+    $routes->post('data-barang/tambah', 'AdminController::aksi_tambah_barang');
+    $routes->get('data-barang/edit/(:num)', 'AdminController::page_edit_barang/$1');
+    $routes->post('data-barang/edit/(:num)', 'AdminController::aksi_edit_barang/$1');
+    $routes->get('data-barang/hapus/(:num)', 'AdminController::delete_barang/$1');
+    // barang masuk
+    $routes->get('data-barang-masuk', 'AdminController::BarangMasuk');
+    $routes->get('data-barang-masuk/tambah', 'AdminController::page_TambahBarangMasuk');
     // satuan
     $routes->get('data-satuan', 'AdminController::page_satuan');
     $routes->get('data-satuan/tambah', 'AdminController::page_tambah_satuan');

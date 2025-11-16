@@ -8,7 +8,13 @@
                 <h2 class="fw-bold text-primary mb-1">
                     <?= esc($breadcrumb) ?>
                 </h2>
-                <p class="text-muted mb-0">Kelola data satuan dibawah ini</p>
+                <p class="text-muted mb-2">Kelola data satuan dibawah ini</p>
+                <?php if (!empty($d_satuan)): ?>
+                    <a href="<?= base_url('admin/data-satuan/tambah') ?>"
+                        class="btn btn-dark btn-sm rounded-pill px-3 py-2 text-capitalize">
+                        <i class="fa-solid fa-file-circle-plus me-1"></i> Tambah
+                    </a>
+                <?php endif; ?>
             </div>
         </div>
     </div>
