@@ -181,6 +181,53 @@
                 ]
             });
         });
+
+        // datatables barang masuk
+        $(document).ready(function() {
+            $('#tableBarangMasuk').DataTable({
+                responsive: true,
+                scrollX: true,
+                autoWidth: false,
+                dom: 'Bfrtip',
+                buttons: [{
+                    extend: 'excelHtml5',
+                    title: 'Data Barang Masuk',
+                    text: '<i class="fas fa-file-excel me-1"></i> Export Excel',
+                    className: 'btn btn-success btn-md'
+                }],
+                language: {
+                    search: "Cari:",
+                    lengthMenu: "Tampilkan _MENU_ data",
+                    info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
+                    paginate: {
+                        first: "Awal",
+                        last: "Akhir",
+                        next: "›",
+                        previous: "‹"
+                    },
+                    zeroRecords: "Tidak ada data yang cocok",
+                    infoEmpty: "Tidak ada data yang ditampilkan",
+                    infoFiltered: "(difilter dari total _MAX_ data)"
+                },
+
+                columnDefs: [{
+                        // Kolom No, Jumlah, Tanggal, User, Status → center
+                        targets: [0, 2, 3, 4, 5],
+                        className: "text-center"
+                    },
+                    {
+                        // Kolom No dan Aksi tidak bisa di-sort
+                        targets: [0, 6],
+                        orderable: false
+                    }
+                ],
+
+                // Urutan default berdasarkan Nama Barang (kolom index 1)
+                order: [
+                    [1, 'asc']
+                ]
+            });
+        });
     </script>
 
 </body>

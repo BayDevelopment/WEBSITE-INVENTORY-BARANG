@@ -18,6 +18,11 @@ class BarangMasukMigration extends Migration
                 'type'     => 'INT',
                 'unsigned' => true,
             ],
+            'kategori' => [
+                'type' => 'VARCHAR',
+                'constraint' => 100,
+                'null' => true,
+            ],
             'jumlah' => [
                 'type' => 'INT',
                 'default' => 0,

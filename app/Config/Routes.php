@@ -31,6 +31,17 @@ $routes->group('admin', [
     // barang masuk
     $routes->get('data-barang-masuk', 'AdminController::BarangMasuk');
     $routes->get('data-barang-masuk/tambah', 'AdminController::page_TambahBarangMasuk');
+    $routes->post('data-barang-masuk/tambah', 'AdminController::aksi_tambahBarangMasuk');
+    $routes->get('data-barang-masuk/edit/(:num)', 'AdminController::page_EditBarangMasuk/$1');
+    $routes->post('data-barang-masuk/update/(:num)', 'AdminController::aksi_editBarangMasuk/$1');
+    $routes->get('data-barang-masuk/hapus/(:num)', 'AdminController::deleteBarangMasuk/$1');
+    // barang keluar
+    $routes->get('data-barang-keluar', 'AdminController::BarangKeluar');
+    $routes->get('data-barang-keluar/tambah', 'AdminController::page_TambahBarangKeluar');
+    $routes->post('data-barang-keluar/tambah', 'AdminController::aksi_tambah_barang_keluar');
+    $routes->get('data-barang-keluar/edit/(:num)', 'AdminController::page_EditBarangKeluar/$1');
+    $routes->post('data-barang-keluar/update/(:num)', 'AdminController::aksi_edit_barang_keluar/$1');
+    $routes->get('data-barang-keluar/hapus/(:num)', 'AdminController::delete_BarangKeluar/$1');
     // satuan
     $routes->get('data-satuan', 'AdminController::page_satuan');
     $routes->get('data-satuan/tambah', 'AdminController::page_tambah_satuan');

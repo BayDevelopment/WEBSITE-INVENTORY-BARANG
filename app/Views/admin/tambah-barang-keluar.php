@@ -8,10 +8,10 @@
                 <h2 class="fw-bold text-primary mb-1">
                     <?= esc($breadcrumb) ?>
                 </h2>
-                <p class="text-muted mb-0">Silakan isi data Barang Masuk dengan lengkap di bawah ini</p>
+                <p class="text-muted mb-0">Silakan isi data Barang Keluar dengan lengkap di bawah ini</p>
             </div>
 
-            <a href="<?= base_url('admin/data-barang-masuk') ?>"
+            <a href="<?= base_url('admin/data-barang-keluar') ?>"
                 class="btn btn-outline-secondary btn-sm rounded-3 shadow-sm">
                 <i class="fa-solid fa-arrow-left me-2"></i>Kembali
             </a>
@@ -27,7 +27,7 @@
                     $validation = \Config\Services::validation();
                     ?>
 
-                    <form action="<?= base_url('admin/data-barang-masuk/tambah') ?>" method="post" class="needs-validation" novalidate>
+                    <form action="<?= base_url('admin/data-barang-keluar/tambah') ?>" method="post" class="needs-validation" novalidate>
                         <?= csrf_field() ?>
 
                         <!-- Dropdown Barang -->
@@ -84,18 +84,18 @@
                         <!-- Tanggal Masuk -->
                         <div class="form-floating mb-3">
                             <input type="date"
-                                name="tanggal_masuk"
-                                id="tanggal_masuk"
-                                class="form-control <?= ($validation->hasError('tanggal_masuk') ? 'is-invalid' : '') ?>"
-                                value="<?= old('tanggal_masuk') ?>"
+                                name="tanggal_keluar"
+                                id="tanggal_keluar"
+                                class="form-control <?= ($validation->hasError('tanggal_keluar') ? 'is-invalid' : '') ?>"
+                                value="<?= old('tanggal_keluar') ?>"
                                 required>
 
-                            <label for="tanggal_masuk">
+                            <label for="tanggal_keluar">
                                 <i class="fa-solid fa-calendar-days me-2 text-primary"></i>Tanggal Masuk
                             </label>
 
                             <div class="invalid-feedback">
-                                <?= $validation->getError('tanggal_masuk') ?: 'Tanggal masuk wajib diisi' ?>
+                                <?= $validation->getError('tanggal_keluar') ?: 'Tanggal masuk wajib diisi' ?>
                             </div>
                         </div>
 

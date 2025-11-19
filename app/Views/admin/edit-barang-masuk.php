@@ -8,7 +8,7 @@
                 <h2 class="fw-bold text-primary mb-1">
                     <?= esc($breadcrumb) ?>
                 </h2>
-                <p class="text-muted mb-0">Silakan isi data Barang Masuk dengan lengkap di bawah ini</p>
+                <p class="text-muted mb-0">Silakan perbarui data Barang Masuk di bawah ini</p>
             </div>
 
             <a href="<?= base_url('admin/data-barang-masuk') ?>"
@@ -18,16 +18,17 @@
         </div>
     </div>
 
-
     <div class="row justify-content-center">
         <div class="col-12">
             <div class="card shadow-lg border-0 rounded-4">
                 <div class="card-body p-4">
-                    <?php
-                    $validation = \Config\Services::validation();
-                    ?>
+                    <?php $validation = \Config\Services::validation(); ?>
 
-                    <form action="<?= base_url('admin/data-barang-masuk/tambah') ?>" method="post" class="needs-validation" novalidate>
+                    <form action="<?= base_url('admin/data-barang-masuk/update/' . $data_masuk['id_barang_masuk']) ?>"
+                        method="post"
+                        class="needs-validation"
+                        novalidate>
+
                         <?= csrf_field() ?>
 
                         <!-- Dropdown Barang -->
@@ -35,22 +36,21 @@
                             <select id="barang"
                                 name="id_barang"
                                 class="form-select <?= ($validation->hasError('id_barang') ? 'is-invalid' : '') ?>"
-                                <?= empty($d_barang) ? 'disabled' : 'required' ?>>
+                                required>
 
                                 <?php if (!empty($d_barang)): ?>
-                                    <option value="" selected disabled>-- Pilih Barang --</option>
+                                    <option value="" disabled>-- Pilih Barang --</option>
 
                                     <?php foreach ($d_barang as $b): ?>
                                         <option value="<?= esc($b['id_barang']) ?>"
-                                            <?= old('id_barang') == $b['id_barang'] ? 'selected' : '' ?>>
+                                            <?= (old('id_barang') ?? $data_masuk['id_barang']) == $b['id_barang'] ? 'selected' : '' ?>>
                                             <?= esc($b['nama_barang']) ?>
                                         </option>
                                     <?php endforeach; ?>
 
                                 <?php else: ?>
-                                    <option value="" selected disabled>⚠️ Tidak ada data barang</option>
+                                    <option value="" disabled selected>⚠️ Tidak ada data barang</option>
                                 <?php endif; ?>
-
                             </select>
 
                             <label for="barang">
@@ -69,7 +69,7 @@
                                 id="jumlah"
                                 class="form-control <?= ($validation->hasError('jumlah') ? 'is-invalid' : '') ?>"
                                 placeholder="Jumlah"
-                                value="<?= old('jumlah') ?>"
+                                value="<?= old('jumlah') ?? $data_masuk['jumlah'] ?>"
                                 required>
 
                             <label for="jumlah">
@@ -87,7 +87,7 @@
                                 name="tanggal_masuk"
                                 id="tanggal_masuk"
                                 class="form-control <?= ($validation->hasError('tanggal_masuk') ? 'is-invalid' : '') ?>"
-                                value="<?= old('tanggal_masuk') ?>"
+                                value="<?= old('tanggal_masuk') ?? $data_masuk['tanggal_masuk'] ?>"
                                 required>
 
                             <label for="tanggal_masuk">
@@ -99,13 +99,38 @@
                             </div>
                         </div>
 
+                        <!-- Status -->
+                        <div class="form-floating mb-3">
+                            <select name="status" id="status"
+                                class="form-select <?= ($validation->hasError('status') ? 'is-invalid' : '') ?>" required>
+
+                                <?php
+                                $statusList = ['menunggu', 'disetujui', 'ditolak'];
+                                $currentStatus = old('status') ?? $data_masuk['status'];
+                                foreach ($statusList as $status): ?>
+                                    <option value="<?= $status ?>" <?= ($currentStatus == $status) ? 'selected' : '' ?>>
+                                        <?= ucfirst($status) ?>
+                                    </option>
+                                <?php endforeach; ?>
+
+                            </select>
+
+                            <label for="status">
+                                <i class="fa-solid fa-flag-checkered me-2 text-primary"></i>Status
+                            </label>
+
+                            <div class="invalid-feedback">
+                                <?= $validation->getError('status') ?: 'Status wajib dipilih' ?>
+                            </div>
+                        </div>
+
                         <!-- Keterangan -->
                         <div class="form-floating mb-4">
                             <textarea name="keterangan"
                                 id="keterangan"
                                 class="form-control <?= ($validation->hasError('keterangan') ? 'is-invalid' : '') ?>"
                                 placeholder="Keterangan Barang"
-                                style="height: 100px"><?= old('keterangan') ?></textarea>
+                                style="height: 100px"><?= old('keterangan') ?? $data_masuk['keterangan'] ?></textarea>
 
                             <label for="keterangan">
                                 <i class="fa-solid fa-pen-to-square me-2 text-primary"></i>Keterangan (Opsional)
@@ -131,7 +156,7 @@
                         <!-- Tombol -->
                         <div class="d-grid g-4">
                             <button type="submit" class="btn btn-primary btn-md rounded-3">
-                                <i class="fa-solid fa-file-circle-plus me-2"></i>Simpan Data
+                                <i class="fa-solid fa-floppy-disk me-2"></i>Update Data
                             </button>
                         </div>
                     </form>
