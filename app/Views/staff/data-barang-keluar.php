@@ -32,10 +32,10 @@
                 <h2 class="fw-bold text-primary mb-1">
                     <?= esc($breadcrumb) ?>
                 </h2>
-                <p class="text-muted mb-2">Kelola data Barang Masuk dibawah ini</p>
+                <p class="text-muted mb-2">Kelola data Barang Keluar dibawah ini</p>
 
                 <?php if (!empty($d_barangMasuk)): ?>
-                    <a href="<?= base_url('admin/data-barang-masuk/tambah') ?>"
+                    <a href="<?= base_url('admin/data-barang-keluar/tambah') ?>"
                         class="btn btn-dark btn-sm rounded-pill px-3 py-2 text-capitalize">
                         <i class="fa-solid fa-file-circle-plus me-1"></i> Tambah
                     </a>
@@ -48,9 +48,9 @@
     <div class="row">
         <div class="col-12">
             <div class="card shadow-sm p-3 mb-3">
-                <h5 class="fw-bold mb-3"><i class="fas fa-filter me-2"></i>Filter Barang Masuk</h5>
+                <h5 class="fw-bold mb-3"><i class="fas fa-filter me-2"></i>Filter Barang Keluar</h5>
 
-                <form method="get" action="<?= base_url('admin/data-barang-masuk') ?>" class="row g-2 align-items-end">
+                <form method="get" action="<?= base_url('admin/data-barang-keluar') ?>" class="row g-2 align-items-end">
 
                     <div class="col-md-4">
                         <label for="nama_barang" class="form-label">Nama Barang</label>
@@ -79,7 +79,7 @@
                     </div>
 
                     <div class="col-md-2 d-grid">
-                        <a href="<?= base_url('admin/data-barang-masuk') ?>" class="btn btn-secondary">
+                        <a href="<?= base_url('admin/data-barang-keluar') ?>" class="btn btn-secondary">
                             <i class="fas fa-undo me-1"></i>Reset
                         </a>
                     </div>
@@ -88,7 +88,7 @@
 
             </div>
 
-            <?php if (!empty($d_barangMasuk)): ?>
+            <?php if (!empty($d_barangKeluar)): ?>
                 <div class="card shadow-sm">
                     <div class="table-responsive shadow-sm rounded-3 bg-white p-3">
                         <table id="tableBarangMasuk" class="table table-striped table-hover align-middle text-capitalize mb-0" style="width: 100%;">
@@ -100,19 +100,21 @@
                                     <th scope="col">Tanggal Masuk</th>
                                     <th scope="col">User</th>
                                     <th scope="col">Status</th>
-                                    <th scope="col" style="width:10%;">Aksi</th>
+                                    <?php if (session()->get('role') === 'admin'): ?>
+                                        <th scope="col" style="width:10%;">Aksi</th>
+                                    <?php endif; ?>
                                 </tr>
                             </thead>
 
                             <tbody>
                                 <?php $no = 1; ?>
-                                <?php foreach ($d_barangMasuk as $row): ?>
+                                <?php foreach ($d_barangKeluar as $row): ?>
                                     <tr>
                                         <th scope="row" class="text-center"><?= $no++ ?>.</th>
 
                                         <td><?= esc($row['nama_barang']) ?></td>
                                         <td><?= esc($row['jumlah']) ?></td>
-                                        <td><?= esc(indo_full_date($row['tanggal_masuk'])) ?></td>
+                                        <td><?= esc(indo_full_date($row['tanggal_keluar'])) ?></td>
 
                                         <td>
                                             <?= esc($row['user']) ?>
@@ -151,12 +153,14 @@
                                         </td>
 
 
-                                        <td class="text-center">
-                                            <a href="<?= base_url('admin/data-barang-masuk/edit/' . $row['id_barang_masuk']) ?>" class="btn btn-sm btn-primary rounded-pill px-3"><span><i class="fa-solid fa-pen-to-square"></i></span> Edit</a>
-                                            <a href="javascript:void(0)" onclick="confirmDeleteBarangMasuk('<?= $row['id_barang_masuk'] ?>')" class="btn btn-sm btn-danger rounded-pill px-3" title="Hapus">
-                                                <span><i class="fa-solid fa-trash"></i></span> Hapus
-                                            </a>
-                                        </td>
+                                        <?php if (session()->get('role') === 'admin'): ?>
+                                            <td class="text-center">
+                                                <a href="<?= base_url('admin/data-barang-keluar/edit/' . $row['id_barang_keluar']) ?>" class="btn btn-sm btn-primary rounded-pill px-3"><span><i class="fa-solid fa-pen-to-square"></i></span> Edit</a>
+                                                <a href="javascript:void(0)" onclick="confirmDeleteBarangKeluar('<?= $row['id_barang_keluar'] ?>')" class="btn btn-sm btn-danger rounded-pill px-3" title="Hapus">
+                                                    <span><i class="fa-solid fa-trash"></i></span> Hapus
+                                                </a>
+                                            </td>
+                                        <?php endif; ?>
                                     </tr>
                                 <?php endforeach; ?>
                             </tbody>
@@ -169,8 +173,12 @@
                         alt="Data Kosong"
                         class="img-fluid empty-image"
                         style="max-width: 350px; height: auto; opacity: 0.85;">
-                    <p class="text-muted mt-3 fs-5">Belum ada data Barang Masuk yang tersedia.</p>
-                    <a href="<?= base_url('admin/data-barang-masuk/tambah') ?>" class="btn btn-dark btn-sm rounded-pill py-2 text-capitalize"><span><i class="fa-solid fa-file-circle-plus"></i></span> tambah barang</a>
+                    <p class="text-muted mt-3 fs-5">Belum ada data Barang Keluar yang tersedia.</p>
+                    <?php if (session()->get('role') === 'admin'): ?>
+                        <a href="<?= base_url('admin/data-barang-keluar/tambah') ?>" class="btn btn-dark btn-sm rounded-pill py-2 text-capitalize"><span><i class="fa-solid fa-file-circle-plus"></i></span> tambah barang</a>
+                    <?php else: ?>
+                        <a href="<?= base_url('staff/data-barang-keluar/tambah') ?>" class="btn btn-dark btn-sm rounded-pill py-2 text-capitalize"><span><i class="fa-solid fa-file-circle-plus"></i></span> tambah barang</a>
+                    <?php endif; ?>
                 </div>
             <?php endif; ?>
         </div>
@@ -180,7 +188,7 @@
 <?= $this->endSection() ?>
 <?= $this->section('scripts') ?>
 <script>
-    window.confirmDeleteBarangMasuk = function(id) {
+    window.confirmDeleteBarangKeluar = function(id) {
         Swal.fire({
             title: "Apakah Anda yakin?",
             text: "Data yang dihapus tidak dapat dikembalikan!",
@@ -195,7 +203,7 @@
         }).then((result) => {
             if (result.isConfirmed) {
                 // arahkan ke controller hapusActivity
-                window.location.href = "<?= base_url('admin/data-barang-masuk/hapus/') ?>" + encodeURIComponent(id);
+                window.location.href = "<?= base_url('admin/data-barang-keluar/hapus/') ?>" + encodeURIComponent(id);
             }
         });
     };

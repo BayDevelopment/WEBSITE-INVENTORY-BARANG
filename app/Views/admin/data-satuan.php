@@ -59,7 +59,7 @@
                 <div class="card p-3 shadow-sm">
                     <h4 class="mb-3">Daftar Satuan</h4>
                     <table id="tableSatuan" class="display nowrap table table-striped" style="width:100%">
-                        <thead class="bg-primary text-white text-center">
+                        <thead class=" text-center">
                             <tr>
                                 <th>No</th>
                                 <th>Nama Satuan</th>
@@ -74,7 +74,7 @@
                                     <td><?= $no++ ?> .</td>
                                     <td><?= esc($satuan['nama_satuan']) ?></td>
                                     <td><?= esc($satuan['keterangan'] ?: 'Tidak Ada') ?></td>
-                                    <td class="text-center">
+                                    <td>
                                         <a href="<?= base_url('admin/data-satuan/edit/' . $satuan['id_satuan']) ?>" class="btn btn-sm btn-primary rounded-pill px-3"><span><i class="fa-solid fa-pen-to-square"></i></span> Edit</a>
                                         <a href="javascript:void(0)" onclick="confirmDeleteSatuan('<?= $satuan['id_satuan'] ?>')" class="btn btn-sm btn-danger rounded-pill px-3" title="Hapus">
                                             <span><i class="fa-solid fa-trash"></i></span> Hapus

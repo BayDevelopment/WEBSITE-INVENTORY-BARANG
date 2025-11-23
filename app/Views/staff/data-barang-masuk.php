@@ -100,7 +100,9 @@
                                     <th scope="col">Tanggal Masuk</th>
                                     <th scope="col">User</th>
                                     <th scope="col">Status</th>
-                                    <th scope="col" style="width:10%;">Aksi</th>
+                                    <?php if (session()->get('role') === 'admin'): ?>
+                                        <th scope="col" style="width:10%;">Aksi</th>
+                                    <?php endif; ?>
                                 </tr>
                             </thead>
 
@@ -151,12 +153,14 @@
                                         </td>
 
 
-                                        <td class="text-center">
-                                            <a href="<?= base_url('admin/data-barang-masuk/edit/' . $row['id_barang_masuk']) ?>" class="btn btn-sm btn-primary rounded-pill px-3"><span><i class="fa-solid fa-pen-to-square"></i></span> Edit</a>
-                                            <a href="javascript:void(0)" onclick="confirmDeleteBarangMasuk('<?= $row['id_barang_masuk'] ?>')" class="btn btn-sm btn-danger rounded-pill px-3" title="Hapus">
-                                                <span><i class="fa-solid fa-trash"></i></span> Hapus
-                                            </a>
-                                        </td>
+                                        <?php if (session()->get('role') === 'admin'): ?>
+                                            <td class="text-center">
+                                                <a href="<?= base_url('admin/data-barang-masuk/edit/' . $row['id_barang_masuk']) ?>" class="btn btn-sm btn-primary rounded-pill px-3"><span><i class="fa-solid fa-pen-to-square"></i></span> Edit</a>
+                                                <a href="javascript:void(0)" onclick="confirmDeleteBarangMasuk('<?= $row['id_barang_masuk'] ?>')" class="btn btn-sm btn-danger rounded-pill px-3" title="Hapus">
+                                                    <span><i class="fa-solid fa-trash"></i></span> Hapus
+                                                </a>
+                                            </td>
+                                        <?php endif; ?>
                                     </tr>
                                 <?php endforeach; ?>
                             </tbody>
@@ -170,7 +174,11 @@
                         class="img-fluid empty-image"
                         style="max-width: 350px; height: auto; opacity: 0.85;">
                     <p class="text-muted mt-3 fs-5">Belum ada data Barang Masuk yang tersedia.</p>
-                    <a href="<?= base_url('admin/data-barang-masuk/tambah') ?>" class="btn btn-dark btn-sm rounded-pill py-2 text-capitalize"><span><i class="fa-solid fa-file-circle-plus"></i></span> tambah barang</a>
+                    <?php if (session()->get('role') === 'admin'): ?>
+                        <a href="<?= base_url('admin/data-barang-masuk/tambah') ?>" class="btn btn-dark btn-sm rounded-pill py-2 text-capitalize"><span><i class="fa-solid fa-file-circle-plus"></i></span> tambah barang</a>
+                    <?php else: ?>
+                        <a href="<?= base_url('staff/data-barang-masuk/tambah') ?>" class="btn btn-dark btn-sm rounded-pill py-2 text-capitalize"><span><i class="fa-solid fa-file-circle-plus"></i></span> tambah barang</a>
+                    <?php endif; ?>
                 </div>
             <?php endif; ?>
         </div>

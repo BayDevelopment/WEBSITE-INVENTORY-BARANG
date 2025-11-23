@@ -12,6 +12,19 @@
             /* agar gambar menyatu dengan background */
             filter: brightness(0.95) contrast(1.1);
         }
+
+        #tableBarang td:last-child {
+            width: 150px !important;
+            white-space: nowrap;
+        }
+
+        .dataTables_wrapper .dataTables_scrollHead table {
+            margin-bottom: 0 !important;
+        }
+
+        .dataTables_wrapper .dataTables_scrollBody table {
+            margin-bottom: 0 !important;
+        }
     </style>
     <div class="text-start mb-5">
         <div class="d-flex align-items-center justify-content-between">
@@ -79,7 +92,7 @@
                 <div class="card shadow-sm">
                     <div class="table-responsive shadow-sm rounded-3 bg-white p-3">
                         <table id="tableBarang" class="table table-striped table-hover align-middle text-capitalize mb-0" style="width: 100%;">
-                            <thead class="table-primary text-center">
+                            <thead class="text-center">
                                 <tr>
                                     <th scope="col" style="width:5%;">No</th>
                                     <th scope="col">Kode Barang</th>
@@ -99,13 +112,13 @@
                                         <td><?= esc($row['kode_barang']) ?></td>
                                         <td><?= esc($row['nama_barang']) ?></td>
 
-                                        <td class="text-center">
+                                        <td>
                                             <?= esc($row['nama_satuan']) ?>
                                         </td>
 
-                                        <td class="text-center"><?= esc($row['stok']) ?></td>
+                                        <td><?= esc($row['stok']) ?></td>
 
-                                        <td class="text-center">
+                                        <td style="width: 150px;">
                                             <a href="<?= base_url('admin/data-barang/edit/' . $row['id_barang']) ?>" class="btn btn-sm btn-primary rounded-pill px-3"><span><i class="fa-solid fa-pen-to-square"></i></span> Edit</a>
                                             <a href="javascript:void(0)" onclick="confirmDeleteBarang('<?= $row['id_barang'] ?>')" class="btn btn-sm btn-danger rounded-pill px-3" title="Hapus">
                                                 <span><i class="fa-solid fa-trash"></i></span> Hapus

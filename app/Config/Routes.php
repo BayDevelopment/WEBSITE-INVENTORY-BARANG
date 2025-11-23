@@ -42,6 +42,13 @@ $routes->group('admin', [
     $routes->get('data-barang-keluar/edit/(:num)', 'AdminController::page_EditBarangKeluar/$1');
     $routes->post('data-barang-keluar/update/(:num)', 'AdminController::aksi_edit_barang_keluar/$1');
     $routes->get('data-barang-keluar/hapus/(:num)', 'AdminController::delete_BarangKeluar/$1');
+    // Laporan barang keluar dan masuk
+    $routes->get('laporan-barang', 'AdminController::LaporanDataBarangMasukKeluar');
+    // profile
+    $routes->get('profile', 'AdminController::Profile');
+    $routes->post('update-profile', 'AdminController::aksi_update_profile');
+    $routes->post('change-password', 'AdminController::change_password');
+
     // satuan
     $routes->get('data-satuan', 'AdminController::page_satuan');
     $routes->get('data-satuan/tambah', 'AdminController::page_tambah_satuan');
@@ -56,4 +63,18 @@ $routes->group('staff', [
     'filter' => ['auth', 'role:staff_gudang']
 ], function ($routes) {
     $routes->get('dashboard', 'StaffController::dashboard');
+
+    // barang masuk
+    $routes->get('data-barang-masuk', 'StaffController::BarangMasuk');
+    $routes->get('data-barang-masuk/tambah', 'StaffController::page_TambahBarangMasuk');
+    $routes->post('data-barang-masuk/tambah', 'StaffController::aksi_tambahBarangMasuk');
+    // barang keluar
+    $routes->get('data-barang-keluar', 'StaffController::BarangKeluar');
+    $routes->get('data-barang-keluar/tambah', 'StaffController::page_TambahBarangKeluar');
+    $routes->post('data-barang-keluar/tambah', 'StaffController::aksi_tambah_barang_keluar');
+    $routes->get('laporan-barang', 'StaffController::LaporanDataBarangMasukKeluar');
+    // profile
+    $routes->get('profile', 'StaffController::Profile');
+    $routes->post('update-profile', 'StaffController::aksi_update_profile');
+    $routes->post('change-password', 'StaffController::change_password');
 });

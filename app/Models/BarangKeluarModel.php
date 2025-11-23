@@ -12,7 +12,7 @@ class BarangKeluarModel extends Model
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['id_barang',    'jumlah',    'tanggal_keluar',    'keterangan',    'id_user_input',    'status'];
+    protected $allowedFields    = ['id_barang', 'kategori',   'jumlah',    'tanggal_keluar',    'keterangan',    'id_user_input',    'status', 'alasan_penolakan'];
 
     // Dates
     protected $useTimestamps = true;

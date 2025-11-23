@@ -29,9 +29,15 @@
                     <h6 class="dropdown-header text-muted">Akun Saya</h6>
                 </li>
                 <li>
-                    <a class="dropdown-item d-flex align-items-center gap-2" href="<?= base_url('settings'); ?>">
-                        <i class="fas fa-cog text-primary"></i> Pengaturan
-                    </a>
+                    <?php if (session()->get('role') === 'admin'): ?>
+                        <a class="dropdown-item d-flex align-items-center gap-2" href="<?= base_url('admin/profile'); ?>">
+                            <i class="fas fa-cog text-primary"></i> Pengaturan
+                        </a>
+                    <?php else: ?>
+                        <a class="dropdown-item d-flex align-items-center gap-2" href="<?= base_url('staff/profile'); ?>">
+                            <i class="fas fa-cog text-primary"></i> Pengaturan
+                        </a>
+                    <?php endif; ?>
                 </li>
                 <li>
                     <hr class="dropdown-divider">

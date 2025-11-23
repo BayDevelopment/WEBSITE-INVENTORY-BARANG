@@ -124,6 +124,25 @@
                             </div>
                         </div>
 
+                        <!-- Alasan Penolakan -->
+                        <div class="form-floating mb-3 d-none" id="group-alasan">
+                            <textarea name="alasan_penolakan"
+                                id="alasan_penolakan"
+                                class="form-control <?= ($validation->hasError('alasan_penolakan') ? 'is-invalid' : '') ?>"
+                                placeholder="Alasan Penolakan"
+                                style="height:100px"><?= old('alasan_penolakan') ?? ($data_masuk['alasan_penolakan'] ?? '') ?></textarea>
+
+                            <label for="alasan_penolakan">
+                                <i class="fa-solid fa-triangle-exclamation me-2 text-danger"></i>
+                                Alasan Penolakan
+                            </label>
+
+                            <div class="invalid-feedback">
+                                <?= $validation->getError('alasan_penolakan') ?>
+                            </div>
+                        </div>
+
+
                         <!-- Keterangan -->
                         <div class="form-floating mb-4">
                             <textarea name="keterangan"
@@ -182,6 +201,27 @@
             }, false)
         })
     })()
+    document.addEventListener("DOMContentLoaded", function() {
+        const statusSelect = document.getElementById("status");
+        const alasanGroup = document.getElementById("group-alasan");
+
+        function toggleAlasan() {
+            if (statusSelect.value === "ditolak") {
+                alasanGroup.classList.remove("d-none");
+                document.getElementById("alasan_penolakan").setAttribute("required", "required");
+            } else {
+                alasanGroup.classList.add("d-none");
+                document.getElementById("alasan_penolakan").removeAttribute("required");
+                document.getElementById("alasan_penolakan").value = "";
+            }
+        }
+
+        // Jalankan saat halaman load (untuk kondisi edit)
+        toggleAlasan();
+
+        // Jalankan saat dropdown berubah
+        statusSelect.addEventListener("change", toggleAlasan);
+    });
 </script>
 
 <?= $this->endSection() ?>

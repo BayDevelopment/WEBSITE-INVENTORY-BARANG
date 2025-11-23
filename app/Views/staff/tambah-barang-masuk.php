@@ -11,10 +11,17 @@
                 <p class="text-muted mb-0">Silakan isi data Barang Masuk dengan lengkap di bawah ini</p>
             </div>
 
-            <a href="<?= base_url('admin/data-barang-masuk') ?>"
-                class="btn btn-outline-secondary btn-sm rounded-3 shadow-sm">
-                <i class="fa-solid fa-arrow-left me-2"></i>Kembali
-            </a>
+            <?php if (session()->get('role') === 'admin'): ?>
+                <a href="<?= base_url('admin/data-barang-masuk') ?>"
+                    class="btn btn-outline-secondary btn-sm rounded-3 shadow-sm">
+                    <i class="fa-solid fa-arrow-left me-2"></i>Kembali
+                </a>
+            <?php else: ?>
+                <a href="<?= base_url('staff/data-barang-masuk') ?>"
+                    class="btn btn-outline-secondary btn-sm rounded-3 shadow-sm">
+                    <i class="fa-solid fa-arrow-left me-2"></i>Kembali
+                </a>
+            <?php endif; ?>
         </div>
     </div>
 
@@ -27,7 +34,7 @@
                     $validation = \Config\Services::validation();
                     ?>
 
-                    <form action="<?= base_url('admin/data-barang-masuk/tambah') ?>" method="post" class="needs-validation" novalidate>
+                    <form action="<?= base_url('staff/data-barang-masuk/tambah') ?>" method="post" class="needs-validation" novalidate>
                         <?= csrf_field() ?>
 
                         <!-- Dropdown Barang -->
@@ -98,55 +105,6 @@
                                 <?= $validation->getError('tanggal_masuk') ?: 'Tanggal masuk wajib diisi' ?>
                             </div>
                         </div>
-
-                        <div class="form-floating mb-3">
-                            <select name="status" id="status"
-                                class="form-select <?= ($validation->hasError('status') ? 'is-invalid' : '') ?>" required>
-
-                                <option value="" disabled <?= empty($currentStatus) ? 'selected' : '' ?>>
-                                    -- Pilih Status --
-                                </option>
-
-                                <?php
-                                $statusList = ['menunggu', 'disetujui', 'ditolak'];
-                                foreach ($statusList as $status):
-                                ?>
-                                    <option value="<?= $status ?>"
-                                        <?= (!empty($currentStatus) && $currentStatus === $status) ? 'selected' : '' ?>>
-                                        <?= ucfirst($status) ?>
-                                    </option>
-                                <?php endforeach; ?>
-
-                            </select>
-
-
-                            <label for="status">
-                                <i class="fa-solid fa-flag-checkered me-2 text-primary"></i>Status
-                            </label>
-
-                            <div class="invalid-feedback">
-                                <?= $validation->getError('status') ?: 'Status wajib dipilih.' ?>
-                            </div>
-                        </div>
-
-                        <!-- Alasan Penolakan -->
-                        <div id="alasanWrapper" class="form-floating mb-4 d-none">
-                            <textarea name="alasan_penolakan"
-                                id="alasan_penolakan"
-                                class="form-control <?= ($validation->hasError('alasan_penolakan') ? 'is-invalid' : '') ?>"
-                                placeholder="Masukkan alasan penolakan"
-                                style="height: 100px"><?= old('alasan_penolakan') ?></textarea>
-
-                            <label for="alasan_penolakan">
-                                <i class="fa-solid fa-ban me-2 text-danger"></i>Alasan Penolakan
-                            </label>
-
-                            <div class="invalid-feedback">
-                                <?= $validation->getError('alasan_penolakan') ?>
-                            </div>
-                        </div>
-
-
                         <!-- Keterangan -->
                         <div class="form-floating mb-4">
                             <textarea name="keterangan"
@@ -205,22 +163,6 @@
             }, false)
         })
     })()
-
-    function toggleAlasanPenolakan() {
-        const status = document.getElementById('status').value;
-        const wrapper = document.getElementById('alasanWrapper');
-
-        if (status === 'ditolak') {
-            wrapper.classList.remove('d-none');
-        } else {
-            wrapper.classList.add('d-none');
-        }
-    }
-
-    document.getElementById('status').addEventListener('change', toggleAlasanPenolakan);
-
-    // Saat halaman dimuat (untuk old value)
-    window.addEventListener('DOMContentLoaded', toggleAlasanPenolakan);
 </script>
 
 <?= $this->endSection() ?>

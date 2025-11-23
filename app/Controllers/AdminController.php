@@ -7,6 +7,7 @@ use App\Models\BarangKeluarModel;
 use App\Models\BarangMasukModel;
 use App\Models\BarangModel;
 use App\Models\SatuanModel;
+use App\Models\UsersModel;
 use CodeIgniter\HTTP\ResponseInterface;
 
 class AdminController extends BaseController
@@ -15,22 +16,46 @@ class AdminController extends BaseController
     protected $ModelSatuan;
     protected $ModelBarangMasuk;
     protected $ModelBarangKeluar;
+    protected $ModelUser;
+    protected $session;
     public function __construct()
     {
         $this->ModelBarang = new BarangModel();
         $this->ModelSatuan = new SatuanModel();
         $this->ModelBarangMasuk = new BarangMasukModel();
         $this->ModelBarangKeluar = new BarangKeluarModel();
+        $this->ModelUser = new UsersModel();
+        $this->session   = session();
     }
     public function dashboard()
     {
+        // Load model
+        $barangMasukModel  = new \App\Models\BarangMasukModel();
+        $barangKeluarModel = new \App\Models\BarangKeluarModel();
+
+        // Hitung total data barang masuk dengan status disetujui
+        $totalBarangMasuk = $barangMasukModel
+            ->where('status', 'disetujui')
+            ->countAllResults();
+
+        // Hitung total data barang keluar dengan status disetujui
+        $totalBarangKeluar = $barangKeluarModel
+            ->where('status', 'disetujui')
+            ->countAllResults();
+
+        // Kirim data ke view
         $data = [
-            'title' => 'Dashboard | Inventory Barang',
-            'navlink' => 'dashboard',
-            'breadcrumb' => 'Dashboard'
+            'title'            => 'Dashboard | Inventory Barang',
+            'navlink'          => 'dashboard',
+            'breadcrumb'       => 'Dashboard',
+            'totalBarangMasuk' => $totalBarangMasuk,
+            'totalBarangKeluar' => $totalBarangKeluar,
         ];
+
         return view('admin/dashboard-admin', $data);
     }
+
+
 
     // satuan
     public function page_satuan()
@@ -494,13 +519,12 @@ class AdminController extends BaseController
     {
         $barangMasukModel = new \App\Models\BarangMasukModel();
 
-        // Ambil filter dari GET request
+        // Ambil filter dari GET
         $filterNama    = $this->request->getGet('nama_barang');
         $filterKeyword = $this->request->getGet('keyword');
 
         // ==========================
         // LIST NAMA BARANG UNTUK DROPDOWN
-        // (AMBIL DARI JOIN BARANG MASUK → BARANG)
         // ==========================
         $listNamaBarang = $barangMasukModel
             ->select('tb_barang.nama_barang')
@@ -514,7 +538,14 @@ class AdminController extends BaseController
         // ==========================
         $db = db_connect();
         $builder = $db->table('tb_barang_masuk bm');
-        $builder->select('bm.*, b.nama_barang, u.nama_lengkap AS user');
+
+        $builder->select('
+        bm.*, 
+        b.nama_barang, 
+        u.nama_lengkap AS user,
+        u.role AS role_user
+    ');
+
         $builder->join('tb_barang b', 'b.id_barang = bm.id_barang', 'left');
         $builder->join('tb_users u', 'u.id_user = bm.id_user_input', 'left');
 
@@ -535,11 +566,14 @@ class AdminController extends BaseController
                 ->groupEnd();
         }
 
+        // ORDER
         $builder->orderBy('bm.id_barang_masuk', 'DESC');
+
+        // GET RESULT
         $d_barangMasuk = $builder->get()->getResultArray();
 
         // ==========================
-        // DATA TO VIEW
+        // SEND DATA TO VIEW
         // ==========================
         $data = [
             'title'            => 'Data Barang Masuk | Inventory Barang',
@@ -553,6 +587,7 @@ class AdminController extends BaseController
 
         return view('admin/data-barang-masuk', $data);
     }
+
 
     public function page_TambahBarangMasuk()
     {
@@ -620,6 +655,18 @@ class AdminController extends BaseController
                     'max_length' => 'Keterangan maksimal 255 karakter.'
                 ]
             ],
+
+            // 🔥 VALIDASI alasan_penolakan jika status = ditolak
+            'status' => [
+                'rules' => 'required|in_list[menunggu,disetujui,ditolak]',
+                'errors' => [
+                    'required' => 'Status wajib dipilih.',
+                    'in_list'  => 'Status tidak valid.'
+                ]
+            ],
+            'alasan_penolakan' => [
+                'rules' => 'permit_empty',
+            ],
         ];
 
         if (!$this->validate($rules)) {
@@ -633,47 +680,54 @@ class AdminController extends BaseController
         $jumlahMasuk   = (int)$this->request->getPost('jumlah');
         $tanggalMasuk  = $this->request->getPost('tanggal_masuk');
         $keterangan    = $this->request->getPost('keterangan');
+        $status        = $this->request->getPost('status');
+        $alasan        = $this->request->getPost('alasan_penolakan');
 
-        // Cek apakah id_barang valid
+        // 🔥 Jika status ditolak → alasan wajib
+        if ($status == 'ditolak' && empty($alasan)) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Alasan penolakan wajib diisi jika status ditolak.');
+        }
+
+        // Cek id_barang
         $barangData = $barangModel->find($id_barang);
         if (!$barangData) {
             return redirect()->back()->with('error', 'Barang tidak ditemukan.');
         }
 
-        // -------------------------------
-        // 🔥 LOGIKA UPDATE STOK BARANG
-        // -------------------------------
-        $stokLama = (int)$barangData['stok'];       // stok lama
-        $stokBaru = $stokLama + $jumlahMasuk;       // tambahkan jumlah masuk
+        // ===========================
+        // 🔥 LOGIKA STOK (HANYA JIKA DISETUJUI)
+        // ===========================
+        if ($status == 'disetujui') {
+            $stokLama = (int)$barangData['stok'];
+            $stokBaru = $stokLama + $jumlahMasuk;
 
-        // Update stok barang
-        $barangModel->update($id_barang, [
-            'stok' => $stokBaru
-        ]);
+            $barangModel->update($id_barang, [
+                'stok' => $stokBaru
+            ]);
+        }
 
-        // -------------------------------
-        // 🔥 SIMPAN RIWAYAT BARANG MASUK
-        // -------------------------------
-        // -------------------------------
-        // 🔥 SIMPAN RIWAYAT BARANG MASUK
-        // -------------------------------
+        // ===========================
+        // 🔥 SIMPAN BARANG MASUK
+        // ===========================
         $dataInsert = [
-            'id_barang'      => $id_barang,
-            'jumlah'         => $jumlahMasuk,
-            'tanggal_masuk'  => $tanggalMasuk,
-            'keterangan'     => $keterangan,
-            'id_user_input'  => $idUser,
-            'status'         => 'disetujui',
-
-            // 🟦 KATEGORI TAMBAHAN (OTOMATIS)
-            'kategori'       => 'Barang Masuk',
+            'id_barang'          => $id_barang,
+            'jumlah'             => $jumlahMasuk,
+            'tanggal_masuk'      => $tanggalMasuk,
+            'keterangan'         => $keterangan,
+            'id_user_input'      => $idUser,
+            'status'             => $status,
+            'alasan_penolakan'   => $status == 'ditolak' ? $alasan : null,
+            'kategori'           => 'Barang Masuk',
         ];
 
         $barangMasukModel->insert($dataInsert);
 
         return redirect()->to(base_url('admin/data-barang-masuk'))
-            ->with('success', 'Barang masuk berhasil ditambahkan. Stok barang telah diperbarui.');
+            ->with('success', 'Data barang masuk berhasil disimpan.');
     }
+
 
     public function page_EditBarangMasuk($id)
     {
@@ -718,7 +772,7 @@ class AdminController extends BaseController
         $session = session();
         $idUserLogin = $session->get('id_user');
 
-        // Cek data barang masuk
+        // Cek data barang masuk yang lama
         $existing = $BarangMasukModel
             ->where('id_barang_masuk', $id)
             ->first();
@@ -735,55 +789,71 @@ class AdminController extends BaseController
             'tanggal_masuk'  => 'required|valid_date',
             'keterangan'     => 'permit_empty|string',
             'status'         => 'required|in_list[menunggu,disetujui,ditolak]',
+            'alasan_penolakan' => 'permit_empty|string',
         ];
 
         if (!$this->validate($rules)) {
             return redirect()->back()->withInput()->with('validation', $validation);
         }
 
-        // Ambil input
-        $id_barang      = $this->request->getPost('id_barang');
-        $jumlahBaru     = (int)$this->request->getPost('jumlah');
-        $tanggal_masuk  = $this->request->getPost('tanggal_masuk');
-        $keterangan     = $this->request->getPost('keterangan');
-        $status         = $this->request->getPost('status');
+        // Ambil input user
+        $id_barang       = $this->request->getPost('id_barang');
+        $jumlahBaru      = (int)$this->request->getPost('jumlah');
+        $tanggal_masuk   = $this->request->getPost('tanggal_masuk');
+        $keterangan      = $this->request->getPost('keterangan');
+        $status          = $this->request->getPost('status');
+        $alasan          = $this->request->getPost('alasan_penolakan');
 
-        // Ambil jumlah lama & stok lama
-        $jumlahLama = (int)$existing['jumlah'];
+        // ==========================================
+        // VALIDASI WAJIB: Alasan penolakan jika ditolak
+        // ==========================================
+        if ($status == 'ditolak' && empty($alasan)) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Alasan penolakan wajib diisi ketika status ditolak!');
+        }
 
+        // Ambil stok barang berdasarkan barang lama
         $barang = $BarangModel->where('id_barang', $existing['id_barang'])->first();
         if (!$barang) {
             return redirect()->back()->with('error', 'Data barang tidak ditemukan!');
         }
 
         $stokLama = (int)$barang['stok'];
+        $jumlahLama = (int)$existing['jumlah'];
 
         // ============================
-        // HITUNG PERUBAHAN STOK
+        // LOGIKA UPDATE STOK
+        // - Stok hanya berubah jika status baru = disetujui
+        // - Jika status ditolak / menunggu → stok tidak berubah
         // ============================
-        $stokBaru = $stokLama - $jumlahLama + $jumlahBaru;
 
-        if ($stokBaru < 0) {
-            return redirect()->back()->with('error', 'Stok tidak boleh minus!');
+        if ($status == 'disetujui') {
+
+            // Hitung stok baru
+            $stokBaru = $stokLama - $jumlahLama + $jumlahBaru;
+
+            if ($stokBaru < 0) {
+                return redirect()->back()->with('error', 'Stok tidak boleh minus!');
+            }
+
+            // Update stok
+            $BarangModel->update($existing['id_barang'], [
+                'stok' => $stokBaru
+            ]);
         }
-
-        // ============================
-        // UPDATE STOK BARANG
-        // ============================
-        $BarangModel->update($existing['id_barang'], [
-            'stok' => $stokBaru
-        ]);
 
         // ============================
         // UPDATE DATA BARANG MASUK
         // ============================
         $updateData = [
-            'id_barang'      => $id_barang,
-            'jumlah'         => $jumlahBaru,
-            'tanggal_masuk'  => $tanggal_masuk,
-            'keterangan'     => $keterangan,
-            'status'         => $status,
-            'id_user_input'  => $idUserLogin,  // langsung dari session (AMAN)
+            'id_barang'         => $id_barang,
+            'jumlah'            => $jumlahBaru,
+            'tanggal_masuk'     => $tanggal_masuk,
+            'keterangan'        => $keterangan,
+            'status'            => $status,
+            'alasan_penolakan'  => $status == 'ditolak' ? $alasan : null,
+            'id_user_input'     => $idUserLogin,
         ];
 
         $BarangMasukModel->update($id, $updateData);
@@ -791,6 +861,7 @@ class AdminController extends BaseController
         return redirect()->to(base_url('admin/data-barang-masuk'))
             ->with('success', 'Data barang masuk berhasil diperbarui!');
     }
+
     public function deleteBarangMasuk($id)
     {
         // Ambil data barang masuk berdasarkan ID
@@ -846,12 +917,12 @@ class AdminController extends BaseController
     {
         $barangKeluarModel = new \App\Models\BarangKeluarModel();
 
-        // Ambil filter dari GET request
+        // Ambil filter dari GET
         $filterNama    = $this->request->getGet('nama_barang');
         $filterKeyword = $this->request->getGet('keyword');
 
         // ==========================
-        // LIST NAMA BARANG UNTUK DROPDOWN (AMBIL DARI JOIN)
+        // LIST NAMA BARANG UNTUK DROPDOWN
         // ==========================
         $listNamaBarang = $barangKeluarModel
             ->select('tb_barang.nama_barang')
@@ -865,7 +936,14 @@ class AdminController extends BaseController
         // ==========================
         $db = db_connect();
         $builder = $db->table('tb_barang_keluar bk');
-        $builder->select('bk.*, b.nama_barang, u.nama_lengkap AS user');
+
+        $builder->select('
+        bk.*,
+        b.nama_barang,
+        u.nama_lengkap AS user,
+        u.role AS role_user
+    ');
+
         $builder->join('tb_barang b', 'b.id_barang = bk.id_barang', 'left');
         $builder->join('tb_users u', 'u.id_user = bk.id_user_input', 'left');
 
@@ -886,11 +964,14 @@ class AdminController extends BaseController
                 ->groupEnd();
         }
 
+        // ORDER
         $builder->orderBy('bk.id_barang_keluar', 'DESC');
+
+        // GET RESULT
         $d_barangKeluar = $builder->get()->getResultArray();
 
         // ==========================
-        // DATA TO VIEW
+        // SEND DATA TO VIEW
         // ==========================
         $data = [
             'title'            => 'Data Barang Keluar | Inventory Barang',
@@ -904,6 +985,7 @@ class AdminController extends BaseController
 
         return view('admin/data-barang-keluar', $data);
     }
+
 
     public function page_TambahBarangKeluar()
     {
@@ -957,19 +1039,24 @@ class AdminController extends BaseController
                     'required' => 'Tanggal barang keluar wajib diisi.'
                 ]
             ],
+
+            'status' => [
+                'rules'  => 'required|in_list[menunggu,disetujui,ditolak]',
+                'errors' => [
+                    'required' => 'Status wajib dipilih.',
+                    'in_list'  => 'Status tidak valid.'
+                ]
+            ],
+
+            'alasan_penolakan' => [
+                'rules' => 'permit_empty',
+            ],
         ]);
 
         if (!$validation->withRequest($this->request)->run()) {
 
             $errors = $validation->getErrors();
-
-            if (isset($errors['jumlah'])) {
-                $flashError = $errors['jumlah'];
-            } elseif (!empty($errors)) {
-                $flashError = array_values($errors)[0];
-            } else {
-                $flashError = 'Input tidak valid.';
-            }
+            $flashError = !empty($errors) ? array_values($errors)[0] : 'Input tidak valid.';
 
             return redirect()->back()
                 ->withInput()
@@ -977,39 +1064,73 @@ class AdminController extends BaseController
                 ->with('error', $flashError);
         }
 
-        // Ambil nilai input
+        // ==========================================
+        // 🔹 Ambil input
+        // ==========================================
         $idBarang = $this->request->getPost('id_barang');
-        $jumlah   = (int) $this->request->getPost('jumlah');
+        $jumlah   = (int)$this->request->getPost('jumlah');
+        $status   = $this->request->getPost('status');
+        $alasan   = $this->request->getPost('alasan_penolakan');
 
-        // Cek stok barang
+        // 🟥 Jika status ditolak, alasan wajib
+        if ($status == 'ditolak' && empty($alasan)) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Alasan penolakan wajib diisi jika status ditolak!');
+        }
+
+        // ==========================================
+        // 🔥 CEK STOK BARANG DI tb_barang
+        // ==========================================
         $barang = $barangModel->find($idBarang);
         if (!$barang) {
             return redirect()->back()->with('error', 'Barang tidak ditemukan.');
         }
 
-        if ($barang['stok'] < $jumlah) {
-            return redirect()->back()->with('error', 'Stok tidak mencukupi!');
+        // 🛑 Stok 0 → Tidak boleh membuat barang keluar (status apapun)
+        if ((int)$barang['stok'] <= 0) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Barang tidak dapat dikeluarkan karena stok saat ini 0!');
         }
 
-        // Update stok
-        $barangModel->update($idBarang, [
-            'stok' => $barang['stok'] - $jumlah
-        ]);
+        // ==========================================
+        // 🔥 UPDATE STOK HANYA SAAT STATUS DISETUJUI
+        // ==========================================
+        if ($status == 'disetujui') {
 
-        // Insert transaksi barang keluar (★ TAMBAH STATUS DISETUJUI)
+            // Jika stok kurang
+            if ($barang['stok'] < $jumlah) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Stok tidak mencukupi!');
+            }
+
+            // Kurangi stok
+            $barangModel->update($idBarang, [
+                'stok' => $barang['stok'] - $jumlah
+            ]);
+        }
+
+        // ==========================================
+        // 🔥 SIMPAN DATA BARANG KELUAR
+        // ==========================================
         $barangKeluarModel->insert([
-            'id_barang'      => $idBarang,
-            'jumlah'         => $jumlah,
-            'tanggal_keluar' => $this->request->getPost('tanggal_keluar'),
-            'keterangan'     => $this->request->getPost('keterangan'),
-            'id_user_input'  => session()->get('id_user'),
-            'status'         => 'disetujui',      // otomatis
-            'kategori'       => 'Barang Keluar',  // 🟦 kategori otomatis
+            'id_barang'        => $idBarang,
+            'jumlah'           => $jumlah,
+            'tanggal_keluar'   => $this->request->getPost('tanggal_keluar'),
+            'keterangan'       => $this->request->getPost('keterangan'),
+            'id_user_input'    => session()->get('id_user'),
+            'status'           => $status,
+            'alasan_penolakan' => $status == 'ditolak' ? $alasan : null,
+            'kategori'         => 'Barang Keluar',
         ]);
 
         return redirect()->to(base_url('admin/data-barang-keluar'))
-            ->with('success', 'Barang keluar berhasil dicatat dan otomatis disetujui!');
+            ->with('success', 'Barang keluar berhasil diproses!');
     }
+
+
     public function page_EditBarangKeluar($id)
     {
         $session = session();
@@ -1064,50 +1185,58 @@ class AdminController extends BaseController
                     'integer'  => 'Data barang tidak valid.'
                 ]
             ],
-
             'jumlah' => [
                 'rules'  => 'required|integer|greater_than[0]',
                 'errors' => [
                     'required'     => 'Jumlah barang wajib diisi.',
-                    'integer'      => 'Jumlah barang harus berupa angka.',
-                    'greater_than' => 'Jumlah barang harus lebih dari 0.'
+                    'integer'      => 'Jumlah harus berupa angka.',
+                    'greater_than' => 'Jumlah harus lebih dari 0.'
                 ]
             ],
-
             'tanggal_keluar' => [
                 'rules'  => 'required',
                 'errors' => [
                     'required' => 'Tanggal barang keluar wajib diisi.'
                 ]
             ],
+            'status' => [
+                'rules'  => 'required|in_list[menunggu,disetujui,ditolak]',
+                'errors' => [
+                    'required' => 'Status wajib dipilih.',
+                    'in_list'  => 'Status tidak valid.'
+                ]
+            ],
+            'alasan_penolakan' => [
+                'rules'  => 'permit_empty',
+            ]
         ]);
 
         if (!$validation->withRequest($this->request)->run()) {
-            $errors = $validation->getErrors();
-
-            if (isset($errors['jumlah'])) {
-                $flashError = $errors['jumlah'];
-            } elseif (!empty($errors)) {
-                $flashError = array_values($errors)[0];
-            } else {
-                $flashError = 'Input tidak valid.';
-            }
-
             return redirect()->back()
                 ->withInput()
                 ->with('validation', $validation)
-                ->with('error', $flashError);
+                ->with('error', 'Input tidak valid.');
         }
 
         // ====================
         // AMBIL INPUT BARU
         // ====================
-        $idBarangBaru = $this->request->getPost('id_barang');
-        $jumlahBaru   = (int) $this->request->getPost('jumlah');
-        $statusBaru   = 'disetujui'; // otomatis disetujui
+        $idBarangBaru  = $this->request->getPost('id_barang');
+        $jumlahBaru    = (int)$this->request->getPost('jumlah');
+        $statusBaru    = $this->request->getPost('status');
+        $alasan        = $this->request->getPost('alasan_penolakan');
+
+        // ====================
+        // WAJIB ADA ALASAN JIKA DITOLAK
+        // ====================
+        if ($statusBaru === 'ditolak' && empty($alasan)) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Alasan penolakan wajib diisi jika status ditolak.');
+        }
 
         // ================================
-        // JIKA STATUS LAMA DISETUJUI → STOK DIKEMBALIKAN
+        // KEMBALIKAN STOK Lama (jika sebelumnya disetujui)
         // ================================
         if ($dataLama['status'] === 'disetujui') {
             $barangLama = $barangModel->find($dataLama['id_barang']);
@@ -1122,40 +1251,40 @@ class AdminController extends BaseController
         // CEK BARANG BARU
         // ================================
         $barangBaru = $barangModel->find($idBarangBaru);
-
         if (!$barangBaru) {
             return redirect()->back()->with('error', 'Barang baru tidak ditemukan.');
         }
 
         // ================================
-        // HANYA CEK STOK JIKA STATUS BARU DISETUJUI
+        // KURANGI STOK JIKA status = disetujui
         // ================================
         if ($statusBaru === 'disetujui') {
             if ($barangBaru['stok'] < $jumlahBaru) {
                 return redirect()->back()->with('error', 'Stok tidak mencukupi setelah perubahan!');
             }
 
-            // Kurangi stok baru
             $barangModel->update($idBarangBaru, [
                 'stok' => $barangBaru['stok'] - $jumlahBaru
             ]);
         }
 
         // ================================
-        // UPDATE DATA BARANG KELUAR
+        // UPDATE BARANG KELUAR
         // ================================
         $barangKeluarModel->update($id, [
-            'id_barang'      => $idBarangBaru,
-            'jumlah'         => $jumlahBaru,
-            'tanggal_keluar' => $this->request->getPost('tanggal_keluar'),
-            'keterangan'     => $this->request->getPost('keterangan'),
-            'id_user_input'  => session()->get('id_user'),
-            'status'         => $statusBaru
+            'id_barang'        => $idBarangBaru,
+            'jumlah'           => $jumlahBaru,
+            'tanggal_keluar'   => $this->request->getPost('tanggal_keluar'),
+            'keterangan'       => $this->request->getPost('keterangan'),
+            'status'           => $statusBaru,
+            'alasan_penolakan' => $statusBaru === 'ditolak' ? $alasan : null,
+            'id_user_input'    => session()->get('id_user'),
         ]);
 
         return redirect()->to(base_url('admin/data-barang-keluar'))
             ->with('success', 'Data barang keluar berhasil diperbarui!');
     }
+
     public function delete_BarangKeluar($id)
     {
         $barangKeluarModel = new \App\Models\BarangKeluarModel();
@@ -1197,65 +1326,312 @@ class AdminController extends BaseController
     // laporan barang masuk dan keluar 
     public function LaporanDataBarangMasukKeluar()
     {
+        $barangMasukModel  = new \App\Models\BarangMasukModel();
         $barangKeluarModel = new \App\Models\BarangKeluarModel();
-        $barangMasukModel = new \App\Models\BarangMasukModel();
 
-        // Ambil filter dari GET request
-        $filterNama    = $this->request->getGet('nama_barang');
-        $filterKeyword = $this->request->getGet('keyword');
+        // Ambil filter dari GET
+        $filterNama     = $this->request->getGet('nama_barang');
+        $filterKeyword  = $this->request->getGet('keyword');
+        $filterStatus   = $this->request->getGet('status');     // disetujui / ditolak
+        $filterKategori = $this->request->getGet('kategori');   // Barang Masuk / Barang Keluar
 
-        // ==========================
-        // LIST NAMA BARANG UNTUK DROPDOWN (AMBIL DARI JOIN)
-        // ==========================
-        $listNamaBarang = $barangKeluarModel
-            ->select('tb_barang.nama_barang')
-            ->join('tb_barang', 'tb_barang.id_barang = tb_barang_keluar.id_barang')
-            ->groupBy('tb_barang.nama_barang')
-            ->orderBy('tb_barang.nama_barang', 'ASC')
-            ->findAll();
+        // Flag apakah user menekan tombol cari
+        $isSearch = !empty($filterNama) || !empty($filterKeyword) || !empty($filterStatus) || !empty($filterKategori);
 
         // ==========================
-        // QUERY JOIN BARANG KELUAR
+        // LIST NAMA BARANG DROPDOWN
         // ==========================
         $db = db_connect();
-        $builder = $db->table('tb_barang_keluar bk');
-        $builder->select('bk.*, b.nama_barang, u.nama_lengkap AS user');
-        $builder->join('tb_barang b', 'b.id_barang = bk.id_barang', 'left');
-        $builder->join('tb_users u', 'u.id_user = bk.id_user_input', 'left');
+        $listNamaBarang = $db->table('tb_barang')
+            ->select('nama_barang')
+            ->groupBy('nama_barang')
+            ->orderBy('nama_barang', 'ASC')
+            ->get()->getResultArray();
 
         // ==========================
-        // FILTER NAMA BARANG
+        // HASIL PENCARIAN
         // ==========================
-        if (!empty($filterNama)) {
-            $builder->where('b.nama_barang', $filterNama);
+        $result = [];
+
+        if ($isSearch) {
+
+            // --- QUERY GABUNG BARANG MASUK ---
+            if ($filterKategori == "Barang Masuk" || empty($filterKategori)) {
+                $builder = $db->table('tb_barang_masuk bm')
+                    ->select('bm.*, b.nama_barang, u.nama_lengkap AS user, "Barang Masuk" AS kategori')
+                    ->join('tb_barang b', 'b.id_barang = bm.id_barang', 'left')
+                    ->join('tb_users u', 'u.id_user = bm.id_user_input', 'left');
+
+                // filter nama barang
+                if (!empty($filterNama)) {
+                    $builder->where('b.nama_barang', $filterNama);
+                }
+
+                // filter keyword (nama barang + keterangan)
+                if (!empty($filterKeyword)) {
+                    $builder->groupStart()
+                        ->like('b.nama_barang', $filterKeyword)
+                        ->orLike('bm.keterangan', $filterKeyword)
+                        ->groupEnd();
+                }
+
+                // filter status (disetujui / ditolak)
+                if (!empty($filterStatus)) {
+                    $builder->where('bm.status', $filterStatus);
+                }
+
+                $resultMasuk = $builder->get()->getResultArray();
+                $result = array_merge($result, $resultMasuk);
+            }
+
+            // --- QUERY GABUNG BARANG KELUAR ---
+            if ($filterKategori == "Barang Keluar" || empty($filterKategori)) {
+                $builder = $db->table('tb_barang_keluar bk')
+                    ->select('bk.*, b.nama_barang, u.nama_lengkap AS user, "Barang Keluar" AS kategori')
+                    ->join('tb_barang b', 'b.id_barang = bk.id_barang', 'left')
+                    ->join('tb_users u', 'u.id_user = bk.id_user_input', 'left');
+
+                if (!empty($filterNama)) {
+                    $builder->where('b.nama_barang', $filterNama);
+                }
+
+                if (!empty($filterKeyword)) {
+                    $builder->groupStart()
+                        ->like('b.nama_barang', $filterKeyword)
+                        ->orLike('bk.keterangan', $filterKeyword)
+                        ->groupEnd();
+                }
+
+                if (!empty($filterStatus)) {
+                    $builder->where('bk.status', $filterStatus);
+                }
+
+                $resultKeluar = $builder->get()->getResultArray();
+                $result = array_merge($result, $resultKeluar);
+            }
         }
 
         // ==========================
-        // FILTER KEYWORD
-        // ==========================
-        if (!empty($filterKeyword)) {
-            $builder->groupStart()
-                ->like('b.nama_barang', $filterKeyword)
-                ->orLike('bk.keterangan', $filterKeyword)
-                ->groupEnd();
-        }
-
-        $builder->orderBy('bk.id_barang_keluar', 'DESC');
-        $d_barangKeluar = $builder->get()->getResultArray();
-
-        // ==========================
-        // DATA TO VIEW
+        // KIRIM DATA KE VIEW
         // ==========================
         $data = [
-            'title'            => 'Data Barang Keluar | Inventory Barang',
-            'navlink'          => 'barang keluar',
-            'breadcrumb'       => 'Data Barang Keluar',
-            'd_barangKeluar'   => $d_barangKeluar,
+            'title'            => 'Laporan Barang Masuk & Keluar | Inventory Barang',
+            'navlink'          => 'laporan barang',
+            'breadcrumb'       => 'Laporan Barang',
             'list_nama_barang' => $listNamaBarang,
+
+            // Filter
             'filter_nama'      => $filterNama,
-            'filter_keyword'   => $filterKeyword
+            'filter_keyword'   => $filterKeyword,
+            'filter_status'    => $filterStatus,
+            'filter_kategori'  => $filterKategori,
+
+            // Data hasil pencarian
+            'hasil'            => $isSearch ? $result : [],
+
+            // Untuk kontrol tampilan apakah sudah melakukan pencarian
+            'is_search'        => $isSearch
         ];
 
-        return view('admin/data-barang-keluar', $data);
+        return view('admin/laporan-barang', $data);
+    }
+
+    // profile
+    public function Profile()
+    {
+
+        $data = [
+            'title'         => 'Profil Pengguna | Inventory Barang',
+            'navlink'       => 'Profil',
+            'breadcrumb'    => 'Profile Pengguna',
+            'username'      => session()->get('username'),
+            'nama_lengkap'  => session()->get('nama_lengkap'),
+            'email'         => session()->get('email'),
+            'no_telp'       => session()->get('no_telp'),
+            'status_aktif'  => session()->get('status_aktif'),
+        ];
+
+        return view('admin/profile/data-profile', $data);
+    }
+
+    public function aksi_update_profile()
+    {
+        $id_user = session()->get('id_user');
+
+        if (!$id_user) {
+            return redirect()->to('/auth/login')->with('error', 'Sesi pengguna tidak ditemukan.');
+        }
+
+        $validation = \Config\Services::validation();
+
+        // -----------------------------
+        // Validasi input
+        // -----------------------------
+        $validation->setRules([
+            'username' => [
+                'rules'  => 'required|min_length[3]|max_length[50]|regex_match[/^[a-zA-Z0-9_]+$/]',
+                'errors' => [
+                    'required'    => 'Username wajib diisi.',
+                    'min_length'  => 'Username minimal 3 karakter.',
+                    'max_length'  => 'Username maksimal 50 karakter.',
+                    'regex_match' => 'Username hanya boleh huruf, angka, dan underscore. Tidak boleh karakter khusus.'
+                ]
+            ],
+            'nama_lengkap' => [
+                'rules'  => 'required|min_length[3]|max_length[100]',
+                'errors' => [
+                    'required'   => 'Nama lengkap wajib diisi.',
+                    'min_length' => 'Nama lengkap minimal 3 karakter.',
+                    'max_length' => 'Nama lengkap maksimal 100 karakter.'
+                ]
+            ],
+            'email' => [
+                'rules'  => 'required|valid_email',
+                'errors' => [
+                    'required'    => 'Email wajib diisi.',
+                    'valid_email' => 'Format email tidak valid.'
+                ]
+            ],
+            'no_telp' => [
+                'rules'  => 'required|min_length[6]|max_length[20]',
+                'errors' => [
+                    'required'   => 'Nomor telepon wajib diisi.',
+                    'min_length' => 'Nomor telepon minimal 6 digit.',
+                    'max_length' => 'Nomor telepon maksimal 20 digit.'
+                ]
+            ],
+        ]);
+
+        if (!$validation->withRequest($this->request)->run()) {
+
+            $errors = $validation->getErrors();
+            $flashError = !empty($errors) ? array_values($errors)[0] : 'Input tidak valid.';
+
+            return redirect()->back()
+                ->withInput()
+                ->with('validation', $validation)
+                ->with('error', $flashError);
+        }
+
+        // -----------------------------
+        // Cek duplikasi USERNAME, EMAIL & NO TELEPON
+        // -----------------------------
+        $username = $this->request->getPost('username');
+        $email    = $this->request->getPost('email');
+        $no_telp  = $this->request->getPost('no_telp');
+
+        // Username
+        $cekUsername = $this->ModelUser->where('username', $username)
+            ->where('id_user !=', $id_user)
+            ->first();
+        if ($cekUsername) {
+            return redirect()->back()->withInput()->with('error', 'Username sudah digunakan pengguna lain.');
+        }
+
+        // Email
+        $cekEmail = $this->ModelUser->where('email', $email)
+            ->where('id_user !=', $id_user)
+            ->first();
+        if ($cekEmail) {
+            return redirect()->back()->withInput()->with('error', 'Email sudah digunakan pengguna lain.');
+        }
+
+        // No Telp
+        $cekTelp = $this->ModelUser->where('no_telp', $no_telp)
+            ->where('id_user !=', $id_user)
+            ->first();
+        if ($cekTelp) {
+            return redirect()->back()->withInput()->with('error', 'Nomor telepon sudah digunakan pengguna lain.');
+        }
+
+        // -----------------------------
+        // Update data user
+        // -----------------------------
+        $data = [
+            'username'     => $username,
+            'nama_lengkap' => $this->request->getPost('nama_lengkap'),
+            'email'        => $email,
+            'no_telp'      => $no_telp,
+        ];
+
+        $this->ModelUser->update($id_user, $data);
+
+        // -----------------------------
+        // Perbarui session
+        // -----------------------------
+        session()->set($data);
+
+        return redirect()->back()->with('success', 'Profil berhasil diperbarui.');
+    }
+
+    public function change_password()
+    {
+        $userId = session()->get('id_user');
+        if (!$userId) {
+            return redirect()->to('/auth/login')->with('error', 'Sesi pengguna tidak ditemukan.');
+        }
+
+        $validationErrors = [];
+
+        // Ambil input
+        $currentPassword = $this->request->getPost('current_password');
+        $newPassword     = $this->request->getPost('new_password');
+        $confirmPassword = $this->request->getPost('confirm_password');
+
+        // =========================
+        // VALIDASI MANUAL FIELD
+        // =========================
+        // Password saat ini
+        if (!$currentPassword || strlen($currentPassword) < 6) {
+            $validationErrors['current_password'] = !$currentPassword
+                ? 'Password saat ini wajib diisi.'
+                : 'Password saat ini minimal 6 karakter.';
+        }
+
+        // Password baru
+        if (!$newPassword || strlen($newPassword) < 6) {
+            $validationErrors['new_password'] = !$newPassword
+                ? 'Password baru wajib diisi.'
+                : 'Password baru minimal 6 karakter.';
+        }
+
+        // Konfirmasi password
+        if (!$confirmPassword) {
+            $validationErrors['confirm_password'] = 'Konfirmasi password wajib diisi.';
+        } elseif ($newPassword !== $confirmPassword) {
+            $validationErrors['confirm_password'] = 'Konfirmasi password tidak sesuai dengan password baru.';
+        }
+
+        // Jika ada error, redirect kembali dengan input dan error
+        if (!empty($validationErrors)) {
+            return redirect()->back()
+                ->withInput()
+                ->with('validation', $validationErrors)
+                ->with('error', array_values($validationErrors)[0]); // tampilkan error pertama
+        }
+
+        // =========================
+        // AMBIL USER DARI DATABASE
+        // =========================
+        $user = $this->ModelUser->find($userId);
+        if (!$user) {
+            return redirect()->back()->with('error', 'Pengguna tidak ditemukan.');
+        }
+
+        // Cek password saat ini
+        if (!password_verify($currentPassword, $user['password'])) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Password saat ini salah.');
+        }
+
+        // =========================
+        // HASH PASSWORD BARU & UPDATE
+        // =========================
+        $newPasswordHash = password_hash($newPassword, PASSWORD_ARGON2ID);
+
+        $this->ModelUser->update($userId, ['password' => $newPasswordHash]);
+
+        return redirect()->back()->with('success', 'Password berhasil diperbarui.');
     }
 }

@@ -56,18 +56,26 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-    <!-- DataTables JS -->
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+
+    <!-- Buttons CSS (Export Excel, PDF, Print) -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap5.min.css">
+    <!-- DataTables Core -->
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 
-    <!-- DataTables Buttons -->
-    <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
-
-    <!-- JSZip (untuk Excel) -->
+    <!-- JSZip (Wajib untuk Excel) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+    <!-- Buttons Extension -->
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+
 
     <!-- JS Global -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
@@ -108,18 +116,20 @@
             });
         });
 
-        // datatables satuan
+        // DataTables Satuan
         $(document).ready(function() {
             $('#tableSatuan').DataTable({
                 responsive: true,
-                scrollX: true,
+                autoWidth: false,
+
                 dom: 'Bfrtip',
                 buttons: [{
                     extend: 'excelHtml5',
-                    title: 'Data Satuan',
-                    text: '<i class="fas fa-file-excel"></i> Export Excel',
+                    title: 'Data_Satuan',
+                    text: '<i class="fas fa-file-excel me-1"></i> Excel',
                     className: 'btn btn-success btn-md'
                 }],
+
                 language: {
                     search: "Cari:",
                     lengthMenu: "Tampilkan _MENU_ data",
@@ -131,29 +141,45 @@
                         previous: "‹"
                     },
                     zeroRecords: "Tidak ada data yang cocok",
-                    infoEmpty: "Tidak ada data yang ditampilkan",
-                    infoFiltered: "(difilter dari total _MAX_ data)"
-                }
+                    infoEmpty: "Tidak ada data",
+                    infoFiltered: "(difilter dari _MAX_ data)"
+                },
+
+                columnDefs: [{
+                        targets: [0, 1, 2, 3], // No & Aksi center
+                        className: "text-center"
+                    },
+                    {
+                        targets: 2, // Kolom Aksi
+                        orderable: false,
+                        width: "150px" // Lebarkan kolom aksi agar rapi
+                    }
+                ],
+
+                order: [
+                    [1, 'asc']
+                ] // urut berdasarkan Nama Satuan
             });
         });
 
-        // DataTables Barang
+        // Datatables barang
         $(document).ready(function() {
             $('#tableBarang').DataTable({
                 responsive: true,
-                scrollX: true,
                 autoWidth: false,
+
                 dom: 'Bfrtip',
                 buttons: [{
                     extend: 'excelHtml5',
-                    title: 'Data Barang',
-                    text: '<i class="fas fa-file-excel me-1"></i> Export Excel',
+                    title: 'Data_Barang',
+                    text: '<i class="fas fa-file-excel me-1"></i> Excel',
                     className: 'btn btn-success btn-md'
                 }],
+
                 language: {
                     search: "Cari:",
-                    lengthMenu: "Tampilkan MENU data",
-                    info: "Menampilkan START - END dari TOTAL data",
+                    lengthMenu: "Tampilkan _MENU_ data",
+                    info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
                     paginate: {
                         first: "Awal",
                         last: "Akhir",
@@ -161,24 +187,28 @@
                         previous: "‹"
                     },
                     zeroRecords: "Tidak ada data yang cocok",
-                    infoEmpty: "Tidak ada data yang ditampilkan",
-                    infoFiltered: "(difilter dari total MAX data)"
+                    infoEmpty: "Tidak ada data",
+                    infoFiltered: "(difilter dari _MAX_ data)"
                 },
+
                 columnDefs: [{
-                        // No, Satuan, Stok, Aksi dibuat center
                         targets: [0, 3, 4, 5],
                         className: "text-center"
                     },
                     {
-                        // kolom No & Aksi tidak bisa di-sort
+                        targets: 5, // kolom Aksi
+                        width: "150px", // lebar kolom aksi agar rapi
+                        className: "text-center"
+                    },
+                    {
                         targets: [0, 5],
-                        orderable: false
+                        orderable: false // No & Aksi tidak bisa sort
                     }
                 ],
-                // urut default berdasarkan Kode Barang (kolom index 1)
+
                 order: [
                     [1, 'asc']
-                ]
+                ] // urut berdasarkan kolom Kode Barang
             });
         });
 
@@ -186,7 +216,6 @@
         $(document).ready(function() {
             $('#tableBarangMasuk').DataTable({
                 responsive: true,
-                scrollX: true,
                 autoWidth: false,
                 dom: 'Bfrtip',
                 buttons: [{
@@ -215,6 +244,60 @@
                         targets: [0, 2, 3, 4, 5],
                         className: "text-center"
                     },
+
+                    <?php if (session()->get('role') === 'admin'): ?> {
+                            // Kolom No & Aksi tidak bisa di-sort
+                            targets: [0, 6],
+                            orderable: false
+                        }
+                    <?php else: ?> {
+                            // Jika bukan admin, kolom No tidak bisa sort (karena kolom aksi tidak ada)
+                            targets: [0],
+                            orderable: false
+                        }
+                    <?php endif; ?>
+                ],
+
+                // Urutan default berdasarkan Nama Barang (kolom index 1)
+                order: [
+                    [1, 'asc']
+                ]
+            });
+        });
+
+
+        // datatables barang keluar
+        $(document).ready(function() {
+            $('#tableBarangKeluar').DataTable({
+                responsive: true,
+                autoWidth: false,
+                dom: 'Bfrtip',
+                buttons: [{
+                    extend: 'excelHtml5',
+                    title: 'Data Barang Masuk',
+                    text: '<i class="fas fa-file-excel me-1"></i> Export Excel',
+                    className: 'btn btn-success btn-md'
+                }],
+                language: {
+                    search: "Cari:",
+                    lengthMenu: "Tampilkan _MENU_ data",
+                    info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
+                    paginate: {
+                        first: "Awal",
+                        last: "Akhir",
+                        next: "›",
+                        previous: "‹"
+                    },
+                    zeroRecords: "Tidak ada data yang cocok",
+                    infoEmpty: "Tidak ada data yang ditampilkan",
+                    infoFiltered: "(difilter dari total _MAX_ data)"
+                },
+
+                columnDefs: [{
+                        // Kolom No, Jumlah, Tanggal, User, Status → center
+                        targets: [0, 2, 3, 4, 5, 6],
+                        className: "text-center"
+                    },
                     {
                         // Kolom No dan Aksi tidak bisa di-sort
                         targets: [0, 6],
@@ -226,6 +309,22 @@
                 order: [
                     [1, 'asc']
                 ]
+            });
+        });
+
+        // laporan data barang masuk dan keluar
+        $(document).ready(function() {
+            $('#tabelBarangMasukKeluar').DataTable({
+                responsive: true,
+                lengthChange: true,
+                autoWidth: false,
+                dom: 'Bfrtip',
+                buttons: [{
+                    extend: 'excelHtml5',
+                    title: 'Laporan_Barang_Masuk_Keluar',
+                    text: '<i class="fas fa-file-excel me-1"></i> Excel',
+                    className: 'btn btn-success btn-md'
+                }]
             });
         });
     </script>

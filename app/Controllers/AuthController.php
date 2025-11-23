@@ -94,6 +94,10 @@ class AuthController extends BaseController
             'id_user'    => $user['id_user'],
             'username'   => $user['username'],
             'role'       => $user['role'],
+            'nama_lengkap'       => $user['nama_lengkap'],
+            'email'       => $user['email'],
+            'no_telp'       => $user['no_telp'],
+            'status_aktif'       => $user['status_aktif'],
             'login_time' => time(),
         ]);
 

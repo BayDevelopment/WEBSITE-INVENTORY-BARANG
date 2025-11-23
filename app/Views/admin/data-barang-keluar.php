@@ -12,6 +12,19 @@
             /* agar gambar menyatu dengan background */
             filter: brightness(0.95) contrast(1.1);
         }
+
+        #tableBarangKeluar td:last-child {
+            width: 150px !important;
+            white-space: nowrap;
+        }
+
+        .dataTables_wrapper .dataTables_scrollHead table {
+            margin-bottom: 0 !important;
+        }
+
+        .dataTables_wrapper .dataTables_scrollBody table {
+            margin-bottom: 0 !important;
+        }
     </style>
     <div class="text-start mb-5">
         <div class="d-flex align-items-center justify-content-between">
@@ -78,8 +91,8 @@
             <?php if (!empty($d_barangKeluar)): ?>
                 <div class="card shadow-sm">
                     <div class="table-responsive shadow-sm rounded-3 bg-white p-3">
-                        <table id="tableBarangMasuk" class="table table-striped table-hover align-middle text-capitalize mb-0" style="width: 100%;">
-                            <thead class="table-primary text-center">
+                        <table id="tableBarangKeluar" class="table table-striped table-hover align-middle text-capitalize mb-0" style="width: 100%;">
+                            <thead class=" text-center">
                                 <tr>
                                     <th scope="col" style="width:5%;">No</th>
                                     <th scope="col">Nama Barang</th>
@@ -99,10 +112,25 @@
 
                                         <td><?= esc($row['nama_barang']) ?></td>
                                         <td><?= esc($row['jumlah']) ?></td>
-                                        <td><?= esc($row['tanggal_keluar']) ?></td>
+                                        <td><?= esc(indo_full_date($row['tanggal_keluar'])) ?></td>
 
-                                        <td><?= esc($row['user']) ?></td>
-                                        <td><?= esc($row['status']) ?></td>
+                                        <td>
+                                            <?= esc($row['user']) ?>
+
+                                            <i class="fa-solid fa-circle-info text-primary ms-1"
+                                                data-bs-toggle="tooltip"
+                                                title="Role: <?= ucfirst(esc($row['role_user'])) ?>">
+                                            </i>
+                                        </td>
+                                        <td class="text-capitalize">
+                                            <?php if ($row['status'] == 'disetujui'): ?>
+                                                <span class="badge bg-success">Disetujui</span>
+                                            <?php elseif ($row['status'] == 'ditolak'): ?>
+                                                <span class="badge bg-danger">Ditolak</span>
+                                            <?php else: ?>
+                                                <?= esc($row['status']) ?>
+                                            <?php endif; ?>
+                                        </td>
 
                                         <td class="text-center">
                                             <a href="<?= base_url('admin/data-barang-keluar/edit/' . $row['id_barang_keluar']) ?>" class="btn btn-sm btn-primary rounded-pill px-3"><span><i class="fa-solid fa-pen-to-square"></i></span> Edit</a>
