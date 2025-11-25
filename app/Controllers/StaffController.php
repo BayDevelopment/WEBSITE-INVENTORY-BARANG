@@ -445,22 +445,22 @@ class StaffController extends BaseController
         $barangKeluarModel = new \App\Models\BarangKeluarModel();
 
         // Ambil filter dari GET
-        $filterNama     = $this->request->getGet('nama_barang');
-        $filterKeyword  = $this->request->getGet('keyword');
-        $filterStatus   = $this->request->getGet('status');     // disetujui / ditolak
+        $filterTanggal = $this->request->getGet('tanggal');     // ← ganti nama_barang → tanggal
+        $filterKeyword = $this->request->getGet('keyword');
+        $filterStatus  = $this->request->getGet('status');      // disetujui / ditolak
         $filterKategori = $this->request->getGet('kategori');   // Barang Masuk / Barang Keluar
 
         // Flag apakah user menekan tombol cari
-        $isSearch = !empty($filterNama) || !empty($filterKeyword) || !empty($filterStatus) || !empty($filterKategori);
+        $isSearch = !empty($filterTanggal) || !empty($filterKeyword) || !empty($filterStatus) || !empty($filterKategori);
 
         // ==========================
-        // LIST NAMA BARANG DROPDOWN
+        // LIST TANGGAL DROPDOWN
         // ==========================
         $db = db_connect();
-        $listNamaBarang = $db->table('tb_barang')
-            ->select('nama_barang')
-            ->groupBy('nama_barang')
-            ->orderBy('nama_barang', 'ASC')
+        $listTanggal = $db->table('tb_barang_masuk')
+            ->select("DATE(created_at) AS tanggal")
+            ->groupBy("DATE(created_at)")
+            ->orderBy("tanggal", "DESC")
             ->get()->getResultArray();
 
         // ==========================
@@ -470,19 +470,20 @@ class StaffController extends BaseController
 
         if ($isSearch) {
 
-            // --- QUERY GABUNG BARANG MASUK ---
+            // --- QUERY BARANG MASUK ---
             if ($filterKategori == "Barang Masuk" || empty($filterKategori)) {
+
                 $builder = $db->table('tb_barang_masuk bm')
                     ->select('bm.*, b.nama_barang, u.nama_lengkap AS user, "Barang Masuk" AS kategori')
                     ->join('tb_barang b', 'b.id_barang = bm.id_barang', 'left')
                     ->join('tb_users u', 'u.id_user = bm.id_user_input', 'left');
 
-                // filter nama barang
-                if (!empty($filterNama)) {
-                    $builder->where('b.nama_barang', $filterNama);
+                // filter tanggal
+                if (!empty($filterTanggal)) {
+                    $builder->where("DATE(bm.created_at)", $filterTanggal);
                 }
 
-                // filter keyword (nama barang + keterangan)
+                // filter keyword
                 if (!empty($filterKeyword)) {
                     $builder->groupStart()
                         ->like('b.nama_barang', $filterKeyword)
@@ -490,7 +491,10 @@ class StaffController extends BaseController
                         ->groupEnd();
                 }
 
-                // filter status (disetujui / ditolak)
+                // WAJIB tampil hanya disetujui / ditolak
+                $builder->whereIn('bm.status', ['disetujui', 'ditolak']);
+
+                // filter status user pilih
                 if (!empty($filterStatus)) {
                     $builder->where('bm.status', $filterStatus);
                 }
@@ -499,15 +503,16 @@ class StaffController extends BaseController
                 $result = array_merge($result, $resultMasuk);
             }
 
-            // --- QUERY GABUNG BARANG KELUAR ---
+            // --- QUERY BARANG KELUAR ---
             if ($filterKategori == "Barang Keluar" || empty($filterKategori)) {
+
                 $builder = $db->table('tb_barang_keluar bk')
                     ->select('bk.*, b.nama_barang, u.nama_lengkap AS user, "Barang Keluar" AS kategori')
                     ->join('tb_barang b', 'b.id_barang = bk.id_barang', 'left')
                     ->join('tb_users u', 'u.id_user = bk.id_user_input', 'left');
 
-                if (!empty($filterNama)) {
-                    $builder->where('b.nama_barang', $filterNama);
+                if (!empty($filterTanggal)) {
+                    $builder->where("DATE(bk.created_at)", $filterTanggal);
                 }
 
                 if (!empty($filterKeyword)) {
@@ -516,6 +521,9 @@ class StaffController extends BaseController
                         ->orLike('bk.keterangan', $filterKeyword)
                         ->groupEnd();
                 }
+
+                // WAJIB tampil hanya disetujui / ditolak
+                $builder->whereIn('bk.status', ['disetujui', 'ditolak']);
 
                 if (!empty($filterStatus)) {
                     $builder->where('bk.status', $filterStatus);
@@ -533,23 +541,22 @@ class StaffController extends BaseController
             'title'            => 'Laporan Barang Masuk & Keluar | Inventory Barang',
             'navlink'          => 'laporan barang',
             'breadcrumb'       => 'Laporan Barang',
-            'list_nama_barang' => $listNamaBarang,
+            'list_tanggal'     => $listTanggal, // ← ganti ke tanggal
 
             // Filter
-            'filter_nama'      => $filterNama,
+            'filter_tanggal'   => $filterTanggal,
             'filter_keyword'   => $filterKeyword,
             'filter_status'    => $filterStatus,
             'filter_kategori'  => $filterKategori,
 
-            // Data hasil pencarian
+            // Hasil
             'hasil'            => $isSearch ? $result : [],
-
-            // Untuk kontrol tampilan apakah sudah melakukan pencarian
             'is_search'        => $isSearch
         ];
 
         return view('staff/laporan-barang', $data);
     }
+
 
     // profile
     public function Profile()

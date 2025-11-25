@@ -3,7 +3,7 @@
         <div class="sb-sidenav-menu">
             <div class="nav">
                 <div class="sb-sidenav-menu-heading">Core</div>
-                <a class="nav-link mb-2 custom-link <?= $navlink === 'dashboard' ? 'active' : '' ?>" href="<?= base_url('/') ?>">
+                <a class="nav-link mb-2 custom-link <?= $navlink === 'dashboard' ? 'active' : '' ?>" href="<?= base_url('') ?>">
                     <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
                     Dashboard
                 </a>
@@ -40,7 +40,7 @@
                         <div class="sb-nav-link-icon"><i class="fas fa-arrow-circle-up"></i></div>
                         Barang Keluar
                     </a>
-                    <a class="nav-link mb-2 custom-link <?= $navlink === 'Laporan Barang' ? 'active' : '' ?>" href="<?= base_url('admin/laporan-barang') ?>">
+                    <a class="nav-link mb-2 custom-link <?= $navlink === 'laporan barang' ? 'active' : '' ?>" href="<?= base_url('admin/laporan-barang') ?>">
                         <div class="sb-nav-link-icon"><i class="fas fa-file-alt"></i></div>
                         Laporan Barang
                     </a>

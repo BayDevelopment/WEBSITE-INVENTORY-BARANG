@@ -143,7 +143,7 @@
     <div class="row g-4">
 
         <!-- Profile Left -->
-        <div class="col-lg-4 col-md-12">
+        <div class="col-lg-4 col-sm-12 col-md-12">
             <div class="profile-wrapper p-4">
 
                 <!-- Profile Avatar -->
@@ -181,7 +181,7 @@
         </div>
 
         <!-- Tabs Right -->
-        <div class="col-lg-8 col-md-12">
+        <div class="col-lg-8 col-sm-12 col-md-12">
             <div class="tab-card">
 
                 <ul class="nav nav-pills mb-4 gap-2" id="pills-tab" role="tablist">

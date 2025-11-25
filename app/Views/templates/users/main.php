@@ -120,8 +120,8 @@
         $(document).ready(function() {
             $('#tableSatuan').DataTable({
                 responsive: true,
+                scrollX: true,
                 autoWidth: false,
-
                 dom: 'Bfrtip',
                 buttons: [{
                     extend: 'excelHtml5',
@@ -166,8 +166,8 @@
         $(document).ready(function() {
             $('#tableBarang').DataTable({
                 responsive: true,
+                scrollX: true,
                 autoWidth: false,
-
                 dom: 'Bfrtip',
                 buttons: [{
                     extend: 'excelHtml5',
@@ -216,6 +216,7 @@
         $(document).ready(function() {
             $('#tableBarangMasuk').DataTable({
                 responsive: true,
+                scrollX: true,
                 autoWidth: false,
                 dom: 'Bfrtip',
                 buttons: [{
@@ -270,6 +271,7 @@
         $(document).ready(function() {
             $('#tableBarangKeluar').DataTable({
                 responsive: true,
+                scrollX: true,
                 autoWidth: false,
                 dom: 'Bfrtip',
                 buttons: [{
@@ -316,7 +318,7 @@
         $(document).ready(function() {
             $('#tabelBarangMasukKeluar').DataTable({
                 responsive: true,
-                lengthChange: true,
+                scrollX: true,
                 autoWidth: false,
                 dom: 'Bfrtip',
                 buttons: [{

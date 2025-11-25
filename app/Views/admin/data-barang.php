@@ -91,7 +91,7 @@
             <?php if (!empty($d_barang)): ?>
                 <div class="card shadow-sm">
                     <div class="table-responsive shadow-sm rounded-3 bg-white p-3">
-                        <table id="tableBarang" class="table table-striped table-hover align-middle text-capitalize mb-0" style="width: 100%;">
+                        <table id="tableBarang" class="table table-striped table-hover align-middle text-capitalize mb-0 nowrap" style="width: 100%;">
                             <thead class="text-center">
                                 <tr>
                                     <th scope="col" style="width:5%;">No</th>
@@ -131,13 +131,19 @@
                     </div>
                 </div>
             <?php else: ?>
-                <div class="d-flex flex-column align-items-center justify-content-center py-5">
+                <div class="empty-state d-flex flex-column align-items-center justify-content-center">
                     <img src="<?= base_url('assets/img/empty.jpg') ?>"
                         alt="Data Kosong"
-                        class="img-fluid empty-image"
-                        style="max-width: 350px; height: auto; opacity: 0.85;">
-                    <p class="text-muted mt-3 fs-5">Belum ada data barang yang tersedia.</p>
-                    <a href="<?= base_url('admin/data-barang/tambah') ?>" class="btn btn-dark btn-sm rounded-pill py-2 text-capitalize"><span><i class="fa-solid fa-file-circle-plus"></i></span> tambah barang</a>
+                        class="img-fluid empty-image">
+
+                    <p class="text-muted text-center mt-3 fs-5">
+                        Belum ada data Barang Masuk yang tersedia.
+                    </p>
+
+                    <a href="<?= base_url('admin/data-barang/tambah') ?>"
+                        class="btn btn-dark btn-sm rounded-pill py-2 text-capitalize">
+                        <span><i class="fa-solid fa-file-circle-plus"></i></span> tambah barang
+                    </a>
                 </div>
             <?php endif; ?>
         </div>

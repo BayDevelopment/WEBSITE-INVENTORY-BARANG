@@ -57,18 +57,10 @@
                 </select>
             </div>
 
-            <!-- Nama Barang -->
             <div class="col-md-2">
-                <label class="form-label">Nama Barang</label>
-                <select name="nama_barang" class="form-select">
-                    <option value="">-- Semua Barang --</option>
-                    <?php foreach ($list_nama_barang as $item): ?>
-                        <option value="<?= esc($item['nama_barang']) ?>"
-                            <?= ($item['nama_barang'] == $filter_nama) ? 'selected' : '' ?>>
-                            <?= esc($item['nama_barang']) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
+                <label class="form-label">Tanggal</label>
+                <input type="date" name="tanggal" class="form-control"
+                    value="<?= esc($filter_tanggal ?? '') ?>">
             </div>
 
             <!-- Keyword -->

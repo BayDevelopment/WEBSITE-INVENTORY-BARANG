@@ -784,11 +784,11 @@ class AdminController extends BaseController
 
         // RULES VALIDASI
         $rules = [
-            'id_barang'      => 'required|numeric',
-            'jumlah'         => 'required|numeric',
-            'tanggal_masuk'  => 'required|valid_date',
-            'keterangan'     => 'permit_empty|string',
-            'status'         => 'required|in_list[menunggu,disetujui,ditolak]',
+            'id_barang'        => 'required|numeric',
+            'jumlah'           => 'required|numeric',
+            'tanggal_masuk'    => 'required|valid_date',
+            'keterangan'       => 'permit_empty|string',
+            'status'           => 'required|in_list[menunggu,disetujui,ditolak]',
             'alasan_penolakan' => 'permit_empty|string',
         ];
 
@@ -797,16 +797,14 @@ class AdminController extends BaseController
         }
 
         // Ambil input user
-        $id_barang       = $this->request->getPost('id_barang');
-        $jumlahBaru      = (int)$this->request->getPost('jumlah');
-        $tanggal_masuk   = $this->request->getPost('tanggal_masuk');
-        $keterangan      = $this->request->getPost('keterangan');
-        $status          = $this->request->getPost('status');
-        $alasan          = $this->request->getPost('alasan_penolakan');
+        $id_barang     = $this->request->getPost('id_barang');
+        $jumlahBaru    = (int)$this->request->getPost('jumlah');
+        $tanggal_masuk = $this->request->getPost('tanggal_masuk');
+        $keterangan    = $this->request->getPost('keterangan');
+        $status        = $this->request->getPost('status');
+        $alasan        = $this->request->getPost('alasan_penolakan');
 
-        // ==========================================
-        // VALIDASI WAJIB: Alasan penolakan jika ditolak
-        // ==========================================
+        // Alasan wajib diisi jika status ditolak
         if ($status == 'ditolak' && empty($alasan)) {
             return redirect()->back()
                 ->withInput()
@@ -822,38 +820,29 @@ class AdminController extends BaseController
         $stokLama = (int)$barang['stok'];
         $jumlahLama = (int)$existing['jumlah'];
 
-        // ============================
-        // LOGIKA UPDATE STOK
-        // - Stok hanya berubah jika status baru = disetujui
-        // - Jika status ditolak / menunggu → stok tidak berubah
-        // ============================
-
+        // Perubahan stok hanya jika status disetujui
         if ($status == 'disetujui') {
-
-            // Hitung stok baru
             $stokBaru = $stokLama - $jumlahLama + $jumlahBaru;
 
             if ($stokBaru < 0) {
                 return redirect()->back()->with('error', 'Stok tidak boleh minus!');
             }
 
-            // Update stok
             $BarangModel->update($existing['id_barang'], [
                 'stok' => $stokBaru
             ]);
         }
 
-        // ============================
-        // UPDATE DATA BARANG MASUK
-        // ============================
+        // Update data barang masuk
         $updateData = [
-            'id_barang'         => $id_barang,
-            'jumlah'            => $jumlahBaru,
-            'tanggal_masuk'     => $tanggal_masuk,
-            'keterangan'        => $keterangan,
-            'status'            => $status,
-            'alasan_penolakan'  => $status == 'ditolak' ? $alasan : null,
-            'id_user_input'     => $idUserLogin,
+            'id_barang'        => $id_barang,
+            'jumlah'           => $jumlahBaru,
+            'tanggal_masuk'    => $tanggal_masuk,
+            'keterangan'       => $keterangan,
+            'status'           => $status,
+            'alasan_penolakan' => $status == 'ditolak' ? $alasan : null,
+            // TIDAK mengubah id_user_input → tetap gunakan yang lama
+            'id_user_input'    => $existing['id_user_input'],
         ];
 
         $BarangMasukModel->update($id, $updateData);
@@ -861,6 +850,7 @@ class AdminController extends BaseController
         return redirect()->to(base_url('admin/data-barang-masuk'))
             ->with('success', 'Data barang masuk berhasil diperbarui!');
     }
+
 
     public function deleteBarangMasuk($id)
     {
@@ -1207,7 +1197,7 @@ class AdminController extends BaseController
                 ]
             ],
             'alasan_penolakan' => [
-                'rules'  => 'permit_empty',
+                'rules'  => 'permit_empty'
             ]
         ]);
 
@@ -1218,26 +1208,20 @@ class AdminController extends BaseController
                 ->with('error', 'Input tidak valid.');
         }
 
-        // ====================
-        // AMBIL INPUT BARU
-        // ====================
+        // INPUT BARU
         $idBarangBaru  = $this->request->getPost('id_barang');
         $jumlahBaru    = (int)$this->request->getPost('jumlah');
         $statusBaru    = $this->request->getPost('status');
         $alasan        = $this->request->getPost('alasan_penolakan');
 
-        // ====================
-        // WAJIB ADA ALASAN JIKA DITOLAK
-        // ====================
+        // WAJIB ISI ALASAN JIKA DITOLAK
         if ($statusBaru === 'ditolak' && empty($alasan)) {
             return redirect()->back()
                 ->withInput()
                 ->with('error', 'Alasan penolakan wajib diisi jika status ditolak.');
         }
 
-        // ================================
-        // KEMBALIKAN STOK Lama (jika sebelumnya disetujui)
-        // ================================
+        // KEMBALIKAN STOK LAMA JIKA DATA LAMA BERSTATUS DISETUJUI
         if ($dataLama['status'] === 'disetujui') {
             $barangLama = $barangModel->find($dataLama['id_barang']);
             if ($barangLama) {
@@ -1247,17 +1231,13 @@ class AdminController extends BaseController
             }
         }
 
-        // ================================
         // CEK BARANG BARU
-        // ================================
         $barangBaru = $barangModel->find($idBarangBaru);
         if (!$barangBaru) {
             return redirect()->back()->with('error', 'Barang baru tidak ditemukan.');
         }
 
-        // ================================
-        // KURANGI STOK JIKA status = disetujui
-        // ================================
+        // KURANGI STOK JIKA DISETUJUI
         if ($statusBaru === 'disetujui') {
             if ($barangBaru['stok'] < $jumlahBaru) {
                 return redirect()->back()->with('error', 'Stok tidak mencukupi setelah perubahan!');
@@ -1268,9 +1248,7 @@ class AdminController extends BaseController
             ]);
         }
 
-        // ================================
-        // UPDATE BARANG KELUAR
-        // ================================
+        // UPDATE DATA BARANG KELUAR
         $barangKeluarModel->update($id, [
             'id_barang'        => $idBarangBaru,
             'jumlah'           => $jumlahBaru,
@@ -1278,12 +1256,14 @@ class AdminController extends BaseController
             'keterangan'       => $this->request->getPost('keterangan'),
             'status'           => $statusBaru,
             'alasan_penolakan' => $statusBaru === 'ditolak' ? $alasan : null,
-            'id_user_input'    => session()->get('id_user'),
+            // ❗ ID USER INPUT TIDAK DIUBAH
+            'id_user_input'    => $dataLama['id_user_input'],
         ]);
 
         return redirect()->to(base_url('admin/data-barang-keluar'))
             ->with('success', 'Data barang keluar berhasil diperbarui!');
     }
+
 
     public function delete_BarangKeluar($id)
     {
@@ -1329,45 +1309,39 @@ class AdminController extends BaseController
         $barangMasukModel  = new \App\Models\BarangMasukModel();
         $barangKeluarModel = new \App\Models\BarangKeluarModel();
 
-        // Ambil filter dari GET
-        $filterNama     = $this->request->getGet('nama_barang');
+        // Ambil filter dari GET (tanggal + keyword + kategori + status)
+        $filterTanggal  = $this->request->getGet('tanggal');
         $filterKeyword  = $this->request->getGet('keyword');
-        $filterStatus   = $this->request->getGet('status');     // disetujui / ditolak
-        $filterKategori = $this->request->getGet('kategori');   // Barang Masuk / Barang Keluar
+        $filterKategori = $this->request->getGet('kategori');
+        $filterStatus   = $this->request->getGet('status');   // ← DITAMBAHKAN SESUAI PERINTAH!
 
-        // Flag apakah user menekan tombol cari
-        $isSearch = !empty($filterNama) || !empty($filterKeyword) || !empty($filterStatus) || !empty($filterKategori);
+        // Cek apakah user menekan tombol cari
+        $isSearch = !empty($filterTanggal) || !empty($filterKeyword) || !empty($filterKategori) || !empty($filterStatus);
 
-        // ==========================
-        // LIST NAMA BARANG DROPDOWN
-        // ==========================
+        // Koneksi DB
         $db = db_connect();
-        $listNamaBarang = $db->table('tb_barang')
-            ->select('nama_barang')
-            ->groupBy('nama_barang')
-            ->orderBy('nama_barang', 'ASC')
-            ->get()->getResultArray();
 
-        // ==========================
-        // HASIL PENCARIAN
-        // ==========================
+        // Hasil pencarian
         $result = [];
 
         if ($isSearch) {
 
-            // --- QUERY GABUNG BARANG MASUK ---
+            // ==================================================
+            //               BARANG MASUK
+            // ==================================================
             if ($filterKategori == "Barang Masuk" || empty($filterKategori)) {
+
                 $builder = $db->table('tb_barang_masuk bm')
                     ->select('bm.*, b.nama_barang, u.nama_lengkap AS user, "Barang Masuk" AS kategori')
                     ->join('tb_barang b', 'b.id_barang = bm.id_barang', 'left')
                     ->join('tb_users u', 'u.id_user = bm.id_user_input', 'left');
 
-                // filter nama barang
-                if (!empty($filterNama)) {
-                    $builder->where('b.nama_barang', $filterNama);
+                // Filter berdasarkan tanggal
+                if (!empty($filterTanggal)) {
+                    $builder->where("DATE(bm.created_at)", $filterTanggal);
                 }
 
-                // filter keyword (nama barang + keterangan)
+                // Filter keyword
                 if (!empty($filterKeyword)) {
                     $builder->groupStart()
                         ->like('b.nama_barang', $filterKeyword)
@@ -1375,7 +1349,10 @@ class AdminController extends BaseController
                         ->groupEnd();
                 }
 
-                // filter status (disetujui / ditolak)
+                // WAJIB hanya tampil yg disetujui / ditolak
+                $builder->whereIn('bm.status', ['disetujui', 'ditolak']);
+
+                // Filter status jika dipilih di form
                 if (!empty($filterStatus)) {
                     $builder->where('bm.status', $filterStatus);
                 }
@@ -1384,17 +1361,22 @@ class AdminController extends BaseController
                 $result = array_merge($result, $resultMasuk);
             }
 
-            // --- QUERY GABUNG BARANG KELUAR ---
+            // ==================================================
+            //               BARANG KELUAR
+            // ==================================================
             if ($filterKategori == "Barang Keluar" || empty($filterKategori)) {
+
                 $builder = $db->table('tb_barang_keluar bk')
                     ->select('bk.*, b.nama_barang, u.nama_lengkap AS user, "Barang Keluar" AS kategori')
                     ->join('tb_barang b', 'b.id_barang = bk.id_barang', 'left')
                     ->join('tb_users u', 'u.id_user = bk.id_user_input', 'left');
 
-                if (!empty($filterNama)) {
-                    $builder->where('b.nama_barang', $filterNama);
+                // Filter tanggal
+                if (!empty($filterTanggal)) {
+                    $builder->where("DATE(bk.created_at)", $filterTanggal);
                 }
 
+                // Filter keyword
                 if (!empty($filterKeyword)) {
                     $builder->groupStart()
                         ->like('b.nama_barang', $filterKeyword)
@@ -1402,6 +1384,10 @@ class AdminController extends BaseController
                         ->groupEnd();
                 }
 
+                // WAJIB hanya tampil yg disetujui / ditolak
+                $builder->whereIn('bk.status', ['disetujui', 'ditolak']);
+
+                // Filter status jika dipilih di form
                 if (!empty($filterStatus)) {
                     $builder->where('bk.status', $filterStatus);
                 }
@@ -1415,26 +1401,27 @@ class AdminController extends BaseController
         // KIRIM DATA KE VIEW
         // ==========================
         $data = [
-            'title'            => 'Laporan Barang Masuk & Keluar | Inventory Barang',
-            'navlink'          => 'laporan barang',
-            'breadcrumb'       => 'Laporan Barang',
-            'list_nama_barang' => $listNamaBarang,
+            'title'           => 'Laporan Barang Masuk & Keluar | Inventory Barang',
+            'navlink'         => 'laporan barang',
+            'breadcrumb'      => 'Laporan Barang',
 
             // Filter
-            'filter_nama'      => $filterNama,
-            'filter_keyword'   => $filterKeyword,
-            'filter_status'    => $filterStatus,
-            'filter_kategori'  => $filterKategori,
+            'filter_tanggal'  => $filterTanggal,
+            'filter_keyword'  => $filterKeyword,
+            'filter_kategori' => $filterKategori,
+            'filter_status'   => $filterStatus,   // ← PENTING! DIKIRIM KE VIEW
 
             // Data hasil pencarian
-            'hasil'            => $isSearch ? $result : [],
+            'hasil'           => $isSearch ? $result : [],
 
-            // Untuk kontrol tampilan apakah sudah melakukan pencarian
-            'is_search'        => $isSearch
+            // Info search
+            'is_search'       => $isSearch
         ];
 
         return view('admin/laporan-barang', $data);
     }
+
+
 
     // profile
     public function Profile()

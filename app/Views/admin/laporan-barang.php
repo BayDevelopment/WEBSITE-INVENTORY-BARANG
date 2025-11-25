@@ -57,18 +57,10 @@
                 </select>
             </div>
 
-            <!-- Nama Barang -->
             <div class="col-md-2">
-                <label class="form-label">Nama Barang</label>
-                <select name="nama_barang" class="form-select">
-                    <option value="">-- Semua Barang --</option>
-                    <?php foreach ($list_nama_barang as $item): ?>
-                        <option value="<?= esc($item['nama_barang']) ?>"
-                            <?= ($item['nama_barang'] == $filter_nama) ? 'selected' : '' ?>>
-                            <?= esc($item['nama_barang']) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
+                <label class="form-label">Tanggal</label>
+                <input type="date" name="tanggal" class="form-control"
+                    value="<?= esc($filter_tanggal ?? '') ?>">
             </div>
 
             <!-- Keyword -->
@@ -99,8 +91,7 @@
 
         <div class="card shadow-sm">
             <div class="table-responsive shadow-sm rounded-3 bg-white p-3">
-                <table id="tabelBarangMasukKeluar"
-                    class="table table-striped table-hover align-middle text-capitalize mb-0">
+                <table id="tabelBarangMasukKeluar" class="table table-striped table-hover align-middle text-capitalize mb-0">
 
                     <thead class=" text-center">
                         <tr>
@@ -151,16 +142,16 @@
         <!-- JIKA SUDAH SEARCH TAPI DATA KOSONG -->
     <?php elseif ($is_search && empty($hasil)): ?>
 
-        <div class="text-center py-5">
-            <img src="<?= base_url('assets/img/empty.jpg') ?>" class="empty-image" style="max-width: 300px;">
+        <div class="text-center justify-content-center py-5">
+            <img src="<?= base_url('assets/img/empty.jpg') ?>" class="empty-image" style="max-width: 280px;">
             <p class="text-muted mt-3 fs-5">Tidak ada data sesuai filter.</p>
         </div>
 
         <!-- HALAMAN AWAL (BELUM SEARCH) -->
     <?php else: ?>
 
-        <div class="text-center py-5">
-            <img src="<?= base_url('assets/img/empty.jpg') ?>" class="empty-image" style="max-width: 300px;">
+        <div class="text-center justify-content-center py-5">
+            <img src="<?= base_url('assets/img/empty.jpg') ?>" class="empty-image" style="max-width: 280px;">
             <p class="text-muted mt-3 fs-5">Gunakan filter di atas untuk melihat laporan.</p>
         </div>
 

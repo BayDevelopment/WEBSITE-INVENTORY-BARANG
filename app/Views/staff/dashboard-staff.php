@@ -53,7 +53,11 @@
                     <i class="fa-solid fa-arrow-trend-up fs-4 opacity-75 text-success"></i>
                 </div>
                 <div class="card-footer d-flex align-items-center justify-content-between">
-                    <a class="small text-white stretched-link" href="<?= base_url('admin/data-barang-masuk') ?>">Lihat Detail</a>
+                    <?php if (session()->get('role') === 'admin'): ?>
+                        <a class="small text-white stretched-link" href="<?= base_url('admin/data-barang-masuk') ?>">Lihat Detail</a>
+                    <?php else: ?>
+                        <a class="small text-white stretched-link" href="<?= base_url('staff/data-barang-masuk') ?>">Lihat Detail</a>
+                    <?php endif; ?>
                     <div class="small text-white"><i class="fas fa-angle-right"></i></div>
                 </div>
             </div>
@@ -72,7 +76,11 @@
                     <i class="fa-solid fa-arrow-trend-down fs-4 opacity-75 text-danger"></i>
                 </div>
                 <div class="card-footer d-flex align-items-center justify-content-between">
-                    <a class="small text-white stretched-link" href="<?= base_url('admin/data-barang-keluar') ?>">Lihat Detail</a>
+                    <?php if (session()->get('role') === 'admin'): ?>
+                        <a class="small text-white stretched-link" href="<?= base_url('staff/data-barang-keluar') ?>">Lihat Detail</a>
+                    <?php else: ?>
+                        <a class="small text-white stretched-link" href="<?= base_url('staff/data-barang-keluar') ?>">Lihat Detail</a>
+                    <?php endif; ?>
                     <div class="small text-white"><i class="fas fa-angle-right"></i></div>
                 </div>
             </div>
