@@ -199,6 +199,25 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const form = document.querySelector("form");
+            const submitBtn = form.querySelector("button[type='submit']");
+            const inputs = form.querySelectorAll("input");
+
+            form.addEventListener("submit", function() {
+                // Ubah tombol menjadi loading
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>Loading...`;
+
+                // Jadikan input readonly agar tetap terkirim
+                inputs.forEach(input => {
+                    input.setAttribute("readonly", true);
+                });
+            });
+        });
+    </script>
+
 </body>
 
 </html>
