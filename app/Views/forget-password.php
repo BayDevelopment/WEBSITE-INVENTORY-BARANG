@@ -4,11 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Inventory Barang</title>
+    <title>Lupa Password - Inventory Barang</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
-    <!-- sweetalert -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
@@ -55,13 +54,6 @@
         .login-form h3 {
             font-weight: 700;
             color: #0d6efd;
-            margin-bottom: 0.5rem;
-        }
-
-        .login-form p {
-            color: #6c757d;
-            margin-bottom: 2rem;
-            font-size: 0.95rem;
         }
 
         .form-floating input {
@@ -74,10 +66,6 @@
         .form-floating input:focus {
             border-color: #0d6efd;
             box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
-        }
-
-        .invalid-feedback {
-            font-size: 0.85rem;
         }
 
         .btn-login {
@@ -95,34 +83,17 @@
         }
 
         .footer-text {
-            /* position: absolute; */
             bottom: 10px;
             width: 100%;
             text-align: center;
             font-size: 0.85rem;
             color: #6c757d;
         }
-
-        @media (max-width: 992px) {
-            .login-wrapper {
-                flex-direction: column;
-                max-width: 90%;
-            }
-
-            .login-image {
-                height: 180px;
-            }
-
-            .login-form {
-                padding: 2rem;
-            }
-        }
     </style>
 </head>
 
 <body>
 
-    <!-- SweetAlert -->
     <?php if (session()->getFlashdata('error')) : ?>
         <script>
             Swal.fire({
@@ -135,6 +106,7 @@
             });
         </script>
     <?php endif; ?>
+
     <?php if (session()->getFlashdata('success')) : ?>
         <script>
             Swal.fire({
@@ -152,52 +124,39 @@
         <div class="login-image"></div>
 
         <div class="login-form">
-            <h3>Selamat Datang 👋</h3>
-            <p>Masuk untuk mengelola sistem Inventory Barang Anda dengan aman dan efisien.</p>
+            <h3>Lupa Password 🔐</h3>
+            <p>Masukkan email Anda untuk menerima tautan reset password.</p>
 
-            <form action="<?= site_url('auth/login') ?>" method="post" novalidate>
+            <form action="<?= site_url('auth/forgot-password') ?>" method="post" novalidate>
                 <?= csrf_field() ?>
 
-                <!-- Username -->
-                <div class="form-floating mb-3">
-                    <input type="text"
-                        name="username"
-                        id="inputUsername"
-                        class="form-control <?= ($validation->hasError('username') ? 'is-invalid' : '') ?>"
-                        placeholder="Username"
-                        value="<?= old('username') ?>">
-                    <label for="inputUsername"><i class="bi bi-person-fill me-2"></i>Username</label>
+                <div class="form-floating mb-4">
+                    <input type="email"
+                        name="email"
+                        id="inputEmail"
+                        class="form-control <?= ($validation->hasError('email') ? 'is-invalid' : '') ?>"
+                        placeholder="email@example.com"
+                        value="<?= old('email') ?>">
+                    <label for="inputEmail"><i class="bi bi-envelope-fill me-2"></i>Email</label>
                     <div class="invalid-feedback">
-                        <?= $validation->getError('username') ?>
+                        <?= $validation->getError('email') ?>
                     </div>
                 </div>
-
-                <!-- Password -->
-                <div class="form-floating mb-1">
-                    <input type="password"
-                        name="password"
-                        id="inputPassword"
-                        class="form-control <?= ($validation->hasError('password') ? 'is-invalid' : '') ?>"
-                        placeholder="Password">
-                    <label for="inputPassword"><i class="bi bi-lock-fill me-2"></i>Password</label>
-                    <div class="invalid-feedback">
-                        <?= $validation->getError('password') ?>
-                    </div>
-                </div>
-
-                <div class="text-end mb-4">
-                    <a href="<?= site_url('auth/forgot-password') ?>" class="text-decoration-none" style="font-size: 0.9rem;">
-                        Lupa password?
-                    </a>
-                </div>
-
 
                 <div class="d-grid">
                     <button type="submit" class="btn btn-login text-white">
-                        <i class="bi bi-box-arrow-in-right me-2"></i>Masuk
+                        <i class="bi bi-send-check-fill me-2"></i>Kirim Tautan Reset
                     </button>
                 </div>
             </form>
+
+            <div class="text-center mt-3">
+                <div class="d-grid">
+                    <a href="<?= site_url('auth/login') ?>" class="btn btn-light text-primary text-decoration-none rounded-pill py-2">
+                        <i class="bi bi-arrow-left-circle me-1"></i> Kembali ke Login
+                    </a>
+                </div>
+            </div>
 
             <div class="footer-text mt-4">
                 <small>© <?= date('Y') ?> Inventory System — Built with 💙 by <strong>BayuDev</strong></small>
@@ -215,7 +174,8 @@
             form.addEventListener("submit", function() {
                 // Ubah tombol menjadi loading
                 submitBtn.disabled = true;
-                submitBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>Loading...`;
+                submitBtn.innerHTML =
+                    `<span class="spinner-border spinner-border-sm me-2"></span>Memproses...`;
 
                 // Jadikan input readonly agar tetap terkirim
                 inputs.forEach(input => {
@@ -224,7 +184,6 @@
             });
         });
     </script>
-
 </body>
 
 </html>

@@ -33,6 +33,15 @@ class UsersMigration extends Migration
                 'constraint' => '150',
                 'null'       => true,
             ],
+            'reset_token' => [
+                'type'       => 'VARCHAR',
+                'constraint' => '255',
+                'null'       => true,
+            ],
+            'reset_expires' => [
+                'type'    => 'DATETIME',
+                'null'    => true,
+            ],
             'no_telp' => [
                 'type'       => 'VARCHAR',
                 'constraint' => '20',

@@ -111,6 +111,114 @@ class AuthController extends BaseController
         return redirect()->to('auth')->with('error', 'Role pengguna tidak dikenali.');
     }
 
+    public function forget_password()
+    {
+        $validation = session()->getFlashdata('validation') ?? \Config\Services::validation();
+
+        $data = [
+            'title' => 'Lupa Password | Inventory Barang',
+            'validation' => $validation
+        ];
+        return view('forget-password', $data);
+    }
+
+    public function sendResetLink()
+    {
+        $email = $this->request->getPost('email');
+
+        $user = $this->UserModel->where('email', $email)->first();
+        if (!$user) {
+            return redirect()->back()->with('error', 'Email tidak ditemukan.');
+        }
+
+        // generate token
+        $token   = bin2hex(random_bytes(32));
+        $expires = date('Y-m-d H:i:s', strtotime('+30 minutes'));
+
+        // simpan token
+        $this->UserModel->update($user['id_user'], [
+            'reset_token'   => $token,
+            'reset_expires' => $expires
+        ]);
+
+        // buat link reset
+        $link = base_url('auth/forgot-password/' . $token);
+
+        // kirim email
+        $emailService = \Config\Services::email();
+        $emailService->setFrom('byalbrldici@gmail.com', 'Inventory Barang');
+        $emailService->setTo($email);
+        $emailService->setSubject('Reset Password');
+        $emailService->setMessage("
+        Klik link berikut untuk reset password:<br><br>
+        <a href='$link'>$link</a><br><br>
+        Link berlaku selama 30 menit.
+    ");
+
+        // WAJIB untuk Gmail
+        $emailService->setNewline("\r\n");
+        $emailService->setCRLF("\r\n");
+
+        if (!$emailService->send()) {
+            return redirect()->back()->with('error', $emailService->printDebugger());
+        }
+
+        return redirect()->back()->with('success', 'Link reset password telah dikirim ke email.');
+    }
+
+    public function resetPassword($token)
+    {
+        $user = $this->UserModel->where('reset_token', $token)->first();
+
+        if (!$user || strtotime($user['reset_expires']) < time()) {
+            return redirect()->to('auth/forgot-password')->with('error', 'Token tidak valid atau sudah expired.');
+        }
+
+        return view('reset_password', ['token' => $token]);
+    }
+
+    public function processResetPassword()
+    {
+        $token    = $this->request->getPost('token');
+        $password = $this->request->getPost('password');
+
+        // ambil user berdasarkan token
+        $user = $this->UserModel->where('reset_token', $token)->first();
+
+        if (!$user) {
+            return redirect()->to('auth/forgot-password')->with('error', 'Token invalid.');
+        }
+
+        // VALIDASI PASSWORD MINIMAL 6 KARAKTER
+        $validate = $this->validate([
+            'password' => [
+                'rules'  => 'required|min_length[6]',
+                'errors' => [
+                    'required'    => 'Password wajib diisi.',
+                    'min_length'  => 'Password minimal 6 karakter.'
+                ]
+            ]
+        ]);
+
+        if (!$validate) {
+            // simpan error untuk ditampilkan di view (SweetAlert)
+            return redirect()->back()
+                ->withInput()
+                ->with('error', $this->validator->getError('password'));
+        }
+
+        // update password
+        $this->UserModel->update($user['id_user'], [
+            'password'      => password_hash($password, PASSWORD_ARGON2ID),
+            'reset_token'   => null,
+            'reset_expires' => null
+        ]);
+
+        return redirect()->to('/auth/login')->with('success', 'Password berhasil direset.');
+    }
+
+
+
 
     public function logout()
     {

@@ -14,6 +14,13 @@ $routes->get('/', function () {
 $routes->get('auth/login', 'AuthController::index');
 $routes->post('auth/login', 'AuthController::aksi_auth');
 $routes->get('auth/logout', 'AuthController::logout');
+// lupa password
+$routes->get('auth/forgot-password', 'AuthController::forget_password');
+$routes->post('auth/forgot-password', 'AuthController::sendResetLink');
+// proses ketika sudah di klik dari email 
+$routes->get('auth/forgot-password/(:any)', 'AuthController::resetPassword/$1');
+$routes->post('auth/forgot-password/reset', 'AuthController::processResetPassword');
+
 
 
 // Grup khusus admin

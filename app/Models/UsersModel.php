@@ -17,6 +17,8 @@ class UsersModel extends Model
         'username',
         'nama_lengkap',
         'email',
+        'reset_token',
+        'reset_expires',
         'no_telp',
         'role',
         'status_aktif'
