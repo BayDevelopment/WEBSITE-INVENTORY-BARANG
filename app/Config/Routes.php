@@ -28,6 +28,11 @@ $routes->group('admin', [
     'filter' => ['auth', 'role:admin']
 ], function ($routes) {
     $routes->get('dashboard', 'AdminController::dashboard');
+
+    // POINT SCAN BARANG MASUK DAN KELUAR 
+    // API barcode
+    $routes->get('api/barang/by-barcode/(:segment)', 'BarangApi::byBarcode/$1');
+    
     // barang
     $routes->get('data-barang', 'AdminController::page_barang');
     $routes->get('data-barang/tambah', 'AdminController::page_tambah_barang');
@@ -35,6 +40,9 @@ $routes->group('admin', [
     $routes->get('data-barang/edit/(:num)', 'AdminController::page_edit_barang/$1');
     $routes->post('data-barang/edit/(:num)', 'AdminController::aksi_edit_barang/$1');
     $routes->get('data-barang/hapus/(:num)', 'AdminController::delete_barang/$1');
+    // => Barang Barcode
+    $routes->get('data-barang/barcode/(:num)', 'AdminController::BarcodeBarang/$1');
+
     // barang masuk
     $routes->get('data-barang-masuk', 'AdminController::BarangMasuk');
     $routes->get('data-barang-masuk/tambah', 'AdminController::page_TambahBarangMasuk');
@@ -42,6 +50,9 @@ $routes->group('admin', [
     $routes->get('data-barang-masuk/edit/(:num)', 'AdminController::page_EditBarangMasuk/$1');
     $routes->post('data-barang-masuk/update/(:num)', 'AdminController::aksi_editBarangMasuk/$1');
     $routes->get('data-barang-masuk/hapus/(:num)', 'AdminController::deleteBarangMasuk/$1');
+    // => scan barang masuk
+    $routes->get('scan-barang-masuk', 'AdminController::page_ScanBarangMasuk');
+    
     // barang keluar
     $routes->get('data-barang-keluar', 'AdminController::BarangKeluar');
     $routes->get('data-barang-keluar/tambah', 'AdminController::page_TambahBarangKeluar');
@@ -49,6 +60,9 @@ $routes->group('admin', [
     $routes->get('data-barang-keluar/edit/(:num)', 'AdminController::page_EditBarangKeluar/$1');
     $routes->post('data-barang-keluar/update/(:num)', 'AdminController::aksi_edit_barang_keluar/$1');
     $routes->get('data-barang-keluar/hapus/(:num)', 'AdminController::delete_BarangKeluar/$1');
+    // => scan barang keluar
+    $routes->get('scan-barang-keluar', 'AdminController::page_ScanBarangKeluar');
+
     // Laporan barang keluar dan masuk
     $routes->get('laporan-barang', 'AdminController::LaporanDataBarangMasukKeluar');
     // profile

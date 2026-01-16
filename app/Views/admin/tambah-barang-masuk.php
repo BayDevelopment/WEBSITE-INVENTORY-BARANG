@@ -31,6 +31,7 @@
                         <?= csrf_field() ?>
 
                         <!-- Dropdown Barang -->
+                      <!-- Dropdown Barang -->
                         <div class="form-floating mb-3">
                             <select id="barang"
                                 name="id_barang"
@@ -38,11 +39,19 @@
                                 <?= empty($d_barang) ? 'disabled' : 'required' ?>>
 
                                 <?php if (!empty($d_barang)): ?>
-                                    <option value="" selected disabled>-- Pilih Barang --</option>
+                                    <option value="" disabled
+                                        <?= (empty(old('id_barang')) && empty($selectedId)) ? 'selected' : '' ?>>
+                                        -- Pilih Barang --
+                                    </option>
 
                                     <?php foreach ($d_barang as $b): ?>
-                                        <option value="<?= esc($b['id_barang']) ?>"
-                                            <?= old('id_barang') == $b['id_barang'] ? 'selected' : '' ?>>
+                                        <?php
+                                            // prioritas selected: old() dulu (kalau form error balik), kalau tidak ada baru selectedId dari scan
+                                            $isSelected = old('id_barang')
+                                                ? (old('id_barang') == $b['id_barang'])
+                                                : (!empty($selectedId) && $selectedId == $b['id_barang']);
+                                        ?>
+                                        <option value="<?= esc($b['id_barang']) ?>" <?= $isSelected ? 'selected' : '' ?>>
                                             <?= esc($b['nama_barang']) ?>
                                         </option>
                                     <?php endforeach; ?>
@@ -60,7 +69,14 @@
                             <div class="invalid-feedback">
                                 <?= $validation->getError('id_barang') ?: 'Pilih barang terlebih dahulu' ?>
                             </div>
+
+                            <?php if (!empty($selectedBarang) && empty(old('id_barang'))): ?>
+                                <small class="text-muted d-block mt-1">
+                                    Terpilih otomatis dari scan: <strong><?= esc($selectedBarang['nama_barang']) ?></strong>
+                                </small>
+                            <?php endif; ?>
                         </div>
+
 
                         <!-- Jumlah -->
                         <div class="form-floating mb-3">

@@ -9,6 +9,7 @@ use App\Models\BarangModel;
 use App\Models\SatuanModel;
 use App\Models\UsersModel;
 use CodeIgniter\HTTP\ResponseInterface;
+use Picqer\Barcode\BarcodeGeneratorPNG;
 
 class AdminController extends BaseController
 {
@@ -315,6 +316,36 @@ class AdminController extends BaseController
         return view('admin/data-barang', $data);
     }
 
+    // scan barang
+    public function BarcodeBarang(int $id)
+    {
+        // ambil data barang
+        $barang = $this->ModelBarang->find($id); // sesuaikan model kamu
+        if (!$barang) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Barang tidak ditemukan');
+        }
+
+        $kode = (string) $barang['kode_barang'];
+
+        $generator = new BarcodeGeneratorPNG();
+
+        // ukuran barcode: (scale, height)
+        $png = $generator->getBarcode($kode, $generator::TYPE_CODE_128, 2, 80);
+
+        $download = $this->request->getGet('download') == '1';
+        $filename = 'barcode-' . preg_replace('/[^A-Za-z0-9\-_]/', '_', $kode) . '.png';
+
+        $disposition = $download
+            ? 'attachment; filename="' . $filename . '"'
+            : 'inline; filename="' . $filename . '"';
+
+        return $this->response
+            ->setHeader('Content-Type', 'image/png')
+            ->setHeader('Content-Disposition', $disposition)
+            ->setBody($png);
+    }
+   
+
     public function page_tambah_barang()
     {
         // ====== 1️⃣ Generate Kode Barang Otomatis ======
@@ -589,27 +620,46 @@ class AdminController extends BaseController
     }
 
 
-    public function page_TambahBarangMasuk()
+   public function page_TambahBarangMasuk()
     {
-        // Ambil semua data barang
+        $selectedId = $this->request->getGet('id_barang'); // <-- dari scan
+
         $dBarang = $this->ModelBarang->select('id_barang, nama_barang')->findAll();
 
-        // Ambil id_user dari session (lebih aman daripada cookies)
+        $selectedBarang = null;
+        if (!empty($selectedId)) {
+            $selectedBarang = $this->ModelBarang
+                ->select('id_barang, nama_barang')
+                ->where('id_barang', (int)$selectedId)
+                ->first();
+        }
+
         $session = session();
         $idUserLogin = $session->get('id_user');
 
-        // Kalau Anda benar menggunakan cookies, gunakan:
-        // $idUserLogin = get_cookie('id_user');
-
         $data = [
-            'title'      => 'Tambah Barang Masuk',
-            'navlink'    => 'tambah barang masuk',
-            'breadcrumb' => 'Tambah Barang Masuk',
-            'd_barang'   => $dBarang,
-            'id_user'    => $idUserLogin // dikirim ke view
+            'title'         => 'Tambah Barang Masuk',
+            'navlink'       => 'tambah barang masuk',
+            'breadcrumb'    => 'Tambah Barang Masuk',
+            'd_barang'      => $dBarang,
+            'id_user'       => $idUserLogin,
+            'selectedBarang'=> $selectedBarang,     // <-- baru
+            'selectedId'    => $selectedId,         // <-- baru
         ];
 
         return view('admin/tambah-barang-masuk', $data);
+    }
+
+
+    public function page_ScanBarangMasuk()
+    {
+        $data = [
+            'title'      => 'Scan Barang Masuk',
+            'navlink'    => 'scan barang masuk',
+            'breadcrumb' => 'Scan Barang Masuk',
+        ];
+
+        return view('admin/scan-barang-masuk', $data);
     }
 
     public function aksi_tambahBarangMasuk()
@@ -907,13 +957,10 @@ class AdminController extends BaseController
     {
         $barangKeluarModel = new \App\Models\BarangKeluarModel();
 
-        // Ambil filter dari GET
         $filterNama    = $this->request->getGet('nama_barang');
         $filterKeyword = $this->request->getGet('keyword');
 
-        // ==========================
-        // LIST NAMA BARANG UNTUK DROPDOWN
-        // ==========================
+        // dropdown nama barang
         $listNamaBarang = $barangKeluarModel
             ->select('tb_barang.nama_barang')
             ->join('tb_barang', 'tb_barang.id_barang = tb_barang_keluar.id_barang')
@@ -921,32 +968,23 @@ class AdminController extends BaseController
             ->orderBy('tb_barang.nama_barang', 'ASC')
             ->findAll();
 
-        // ==========================
-        // QUERY JOIN BARANG KELUAR
-        // ==========================
         $db = db_connect();
         $builder = $db->table('tb_barang_keluar bk');
 
         $builder->select('
-        bk.*,
-        b.nama_barang,
-        u.nama_lengkap AS user,
-        u.role AS role_user
-    ');
+            bk.*,
+            b.nama_barang,
+            u.nama_lengkap AS user,
+            u.role AS role_user
+        ');
 
         $builder->join('tb_barang b', 'b.id_barang = bk.id_barang', 'left');
         $builder->join('tb_users u', 'u.id_user = bk.id_user_input', 'left');
 
-        // ==========================
-        // FILTER NAMA BARANG
-        // ==========================
         if (!empty($filterNama)) {
             $builder->where('b.nama_barang', $filterNama);
         }
 
-        // ==========================
-        // FILTER KEYWORD
-        // ==========================
         if (!empty($filterKeyword)) {
             $builder->groupStart()
                 ->like('b.nama_barang', $filterKeyword)
@@ -954,15 +992,10 @@ class AdminController extends BaseController
                 ->groupEnd();
         }
 
-        // ORDER
         $builder->orderBy('bk.id_barang_keluar', 'DESC');
 
-        // GET RESULT
         $d_barangKeluar = $builder->get()->getResultArray();
 
-        // ==========================
-        // SEND DATA TO VIEW
-        // ==========================
         $data = [
             'title'            => 'Data Barang Keluar | Inventory Barang',
             'navlink'          => 'barang keluar',
@@ -974,6 +1007,17 @@ class AdminController extends BaseController
         ];
 
         return view('admin/data-barang-keluar', $data);
+    }
+
+    // page scan 
+    public function page_ScanBarangKeluar()
+    {
+        $data = [
+            'title'      => 'Scan Barang Keluar',
+            'navlink'    => 'scan barang keluar',
+            'breadcrumb' => 'Scan Barang Keluar',
+        ];
+        return view('admin/scan-barang-keluar', $data);
     }
 
 
@@ -999,37 +1043,47 @@ class AdminController extends BaseController
 
         return view('admin/tambah-barang-keluar', $data);
     }
-    public function aksi_tambah_barang_keluar()
+
+    public function aksi_tambahBarangKeluar()
     {
         $barangKeluarModel = new \App\Models\BarangKeluarModel();
         $barangModel       = new \App\Models\BarangModel();
+        $validation        = \Config\Services::validation();
 
-        $validation = \Config\Services::validation();
-        $validation->setRules([
+        $idUser = session()->get('id_user');
+        if (!$idUser) {
+            return redirect()->to('/auth/login')->with('error', 'Sesi pengguna tidak ditemukan.');
+        }
+
+        $rules = [
             'id_barang' => [
-                'rules'  => 'required|integer',
+                'rules'  => 'required|numeric',
                 'errors' => [
                     'required' => 'Pilih barang terlebih dahulu.',
-                    'integer'  => 'Data barang tidak valid.'
+                    'numeric'  => 'Barang tidak valid.'
                 ]
             ],
-
             'jumlah' => [
-                'rules'  => 'required|integer|greater_than[0]',
+                'rules'  => 'required|numeric|greater_than[0]',
                 'errors' => [
-                    'required'     => 'Jumlah barang wajib diisi.',
-                    'integer'      => 'Jumlah barang harus berupa angka.',
-                    'greater_than' => 'Jumlah barang harus lebih dari 0.'
+                    'required'     => 'Jumlah wajib diisi.',
+                    'numeric'      => 'Jumlah harus angka.',
+                    'greater_than' => 'Jumlah harus lebih dari 0.'
                 ]
             ],
-
             'tanggal_keluar' => [
-                'rules'  => 'required',
+                'rules'  => 'required|valid_date',
                 'errors' => [
-                    'required' => 'Tanggal barang keluar wajib diisi.'
+                    'required'   => 'Tanggal keluar wajib diisi.',
+                    'valid_date' => 'Format tanggal tidak valid.'
                 ]
             ],
-
+            'keterangan' => [
+                'rules'  => 'permit_empty|max_length[255]',
+                'errors' => [
+                    'max_length' => 'Keterangan maksimal 255 karakter.'
+                ]
+            ],
             'status' => [
                 'rules'  => 'required|in_list[menunggu,disetujui,ditolak]',
                 'errors' => [
@@ -1037,88 +1091,65 @@ class AdminController extends BaseController
                     'in_list'  => 'Status tidak valid.'
                 ]
             ],
-
             'alasan_penolakan' => [
                 'rules' => 'permit_empty',
             ],
-        ]);
+        ];
 
-        if (!$validation->withRequest($this->request)->run()) {
-
-            $errors = $validation->getErrors();
-            $flashError = !empty($errors) ? array_values($errors)[0] : 'Input tidak valid.';
-
-            return redirect()->back()
-                ->withInput()
-                ->with('validation', $validation)
-                ->with('error', $flashError);
+        if (!$this->validate($rules)) {
+            return redirect()->back()->withInput()->with('errors', $validation->getErrors());
         }
 
-        // ==========================================
-        // 🔹 Ambil input
-        // ==========================================
-        $idBarang = $this->request->getPost('id_barang');
-        $jumlah   = (int)$this->request->getPost('jumlah');
-        $status   = $this->request->getPost('status');
-        $alasan   = $this->request->getPost('alasan_penolakan');
+        $id_barang     = (int)$this->request->getPost('id_barang');
+        $jumlahKeluar  = (int)$this->request->getPost('jumlah');
+        $tanggalKeluar = $this->request->getPost('tanggal_keluar');
+        $keterangan    = $this->request->getPost('keterangan');
+        $status        = $this->request->getPost('status');
+        $alasan        = $this->request->getPost('alasan_penolakan');
 
-        // 🟥 Jika status ditolak, alasan wajib
-        if ($status == 'ditolak' && empty($alasan)) {
-            return redirect()->back()
-                ->withInput()
-                ->with('error', 'Alasan penolakan wajib diisi jika status ditolak!');
+        if ($status === 'ditolak' && empty($alasan)) {
+            return redirect()->back()->withInput()->with('error', 'Alasan penolakan wajib diisi jika status ditolak.');
         }
 
-        // ==========================================
-        // 🔥 CEK STOK BARANG DI tb_barang
-        // ==========================================
-        $barang = $barangModel->find($idBarang);
-        if (!$barang) {
-            return redirect()->back()->with('error', 'Barang tidak ditemukan.');
+        $barangData = $barangModel->find($id_barang);
+        if (!$barangData) {
+            return redirect()->back()->withInput()->with('error', 'Barang tidak ditemukan.');
         }
 
-        // 🛑 Stok 0 → Tidak boleh membuat barang keluar (status apapun)
-        if ((int)$barang['stok'] <= 0) {
-            return redirect()->back()
-                ->withInput()
-                ->with('error', 'Barang tidak dapat dikeluarkan karena stok saat ini 0!');
-        }
+        // 🔥 CEK & UPDATE STOK hanya jika disetujui
+        if ($status === 'disetujui') {
+            $stokLama = (int)$barangData['stok'];
 
-        // ==========================================
-        // 🔥 UPDATE STOK HANYA SAAT STATUS DISETUJUI
-        // ==========================================
-        if ($status == 'disetujui') {
-
-            // Jika stok kurang
-            if ($barang['stok'] < $jumlah) {
+            if ($jumlahKeluar > $stokLama) {
                 return redirect()->back()
                     ->withInput()
-                    ->with('error', 'Stok tidak mencukupi!');
+                    ->with('error', "Stok tidak cukup. Stok tersedia: {$stokLama}");
             }
 
-            // Kurangi stok
-            $barangModel->update($idBarang, [
-                'stok' => $barang['stok'] - $jumlah
+            $stokBaru = $stokLama - $jumlahKeluar;
+
+            $barangModel->update($id_barang, [
+                'stok' => $stokBaru
             ]);
         }
 
-        // ==========================================
-        // 🔥 SIMPAN DATA BARANG KELUAR
-        // ==========================================
-        $barangKeluarModel->insert([
-            'id_barang'        => $idBarang,
-            'jumlah'           => $jumlah,
-            'tanggal_keluar'   => $this->request->getPost('tanggal_keluar'),
-            'keterangan'       => $this->request->getPost('keterangan'),
-            'id_user_input'    => session()->get('id_user'),
+        $dataInsert = [
+            'id_barang'        => $id_barang,
+            'jumlah'           => $jumlahKeluar,
+            'tanggal_keluar'   => $tanggalKeluar,
+            'keterangan'       => $keterangan,
+            'id_user_input'    => $idUser,
             'status'           => $status,
-            'alasan_penolakan' => $status == 'ditolak' ? $alasan : null,
+            'alasan_penolakan' => ($status === 'ditolak') ? $alasan : null,
             'kategori'         => 'Barang Keluar',
-        ]);
+        ];
+
+        $barangKeluarModel->insert($dataInsert);
 
         return redirect()->to(base_url('admin/data-barang-keluar'))
-            ->with('success', 'Barang keluar berhasil diproses!');
+            ->with('success', 'Data barang keluar berhasil disimpan.');
     }
+
 
 
     public function page_EditBarangKeluar($id)

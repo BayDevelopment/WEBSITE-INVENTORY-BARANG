@@ -120,6 +120,11 @@
 
                                         <td style="width: 150px;">
                                             <a href="<?= base_url('admin/data-barang/edit/' . $row['id_barang']) ?>" class="btn btn-sm btn-primary rounded-pill px-3"><span><i class="fa-solid fa-pen-to-square"></i></span> Edit</a>
+                                            <a href="<?= base_url('admin/data-barang/barcode/' . $row['id_barang']) ?>?download=1"
+                                            class="btn btn-sm btn-secondary rounded-pill px-3"
+                                            title="Download Barcode">
+                                                <i class="fa-solid fa-barcode"></i> Barcode
+                                            </a>
                                             <a href="javascript:void(0)" onclick="confirmDeleteBarang('<?= $row['id_barang'] ?>')" class="btn btn-sm btn-danger rounded-pill px-3" title="Hapus">
                                                 <span><i class="fa-solid fa-trash"></i></span> Hapus
                                             </a>

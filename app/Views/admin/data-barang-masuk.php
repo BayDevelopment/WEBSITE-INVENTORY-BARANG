@@ -34,12 +34,18 @@
                 </h2>
                 <p class="text-muted mb-2">Kelola data Barang Masuk dibawah ini</p>
 
-                <?php if (!empty($d_barangMasuk)): ?>
-                    <a href="<?= base_url('admin/data-barang-masuk/tambah') ?>"
-                        class="btn btn-dark btn-sm rounded-pill px-3 py-2 text-capitalize">
-                        <i class="fa-solid fa-file-circle-plus me-1"></i> Tambah
-                    </a>
-                <?php endif; ?>
+               <div class="d-flex gap-2 flex-wrap">
+                <a href="<?= base_url('admin/data-barang-masuk/tambah') ?>"
+                    class="btn btn-dark btn-sm rounded-pill px-3 py-2 text-capitalize">
+                    <i class="fa-solid fa-file-circle-plus me-1"></i> Tambah
+                </a>
+
+                <a href="<?= base_url('admin/scan-barang-masuk') ?>"
+                    class="btn btn-secondary btn-sm rounded-pill px-3 py-2 text-capitalize">
+                    <i class="fa-solid fa-barcode me-1"></i> Scan
+                </a>
+            </div>
+
             </div>
         </div>
     </div>
