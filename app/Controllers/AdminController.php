@@ -1021,30 +1021,43 @@ class AdminController extends BaseController
     }
 
 
-    public function page_TambahBarangKeluar()
-    {
-        // Ambil semua data barang
-        $dBarang = $this->ModelBarang->select('id_barang, nama_barang')->findAll();
+   public function page_TambahBarangKeluar()
+{
+    // ambil id_barang dari query string (hasil redirect scan)
+    $selectedId = $this->request->getGet('id_barang');
 
-        // Ambil id_user dari session (lebih aman daripada cookies)
-        $session = session();
-        $idUserLogin = $session->get('id_user');
+    // Ambil semua data barang (buat dropdown)
+    $dBarang = $this->ModelBarang->select('id_barang, nama_barang')->findAll();
 
-        // Kalau Anda benar menggunakan cookies, gunakan:
-        // $idUserLogin = get_cookie('id_user');
-
-        $data = [
-            'title'      => 'Tambah Barang Keluar',
-            'navlink'    => 'tambah barang Keluar',
-            'breadcrumb' => 'Tambah Barang Keluar',
-            'd_barang'   => $dBarang,
-            'id_user'    => $idUserLogin // dikirim ke view
-        ];
-
-        return view('admin/tambah-barang-keluar', $data);
+    // Ambil barang terpilih (opsional, buat teks "terpilih otomatis")
+    $selectedBarang = null;
+    if (!empty($selectedId)) {
+        $selectedBarang = $this->ModelBarang
+            ->select('id_barang, nama_barang')
+            ->where('id_barang', (int)$selectedId)
+            ->first();
     }
 
-    public function aksi_tambahBarangKeluar()
+    // Ambil id_user dari session
+    $idUserLogin = session()->get('id_user');
+
+    $data = [
+        'title'          => 'Tambah Barang Keluar',
+        'navlink'        => 'tambah barang keluar',
+        'breadcrumb'     => 'Tambah Barang Keluar',
+        'd_barang'       => $dBarang,
+        'id_user'        => $idUserLogin,
+
+        // 🔥 ini yang bikin dropdown auto-selected
+        'selectedId'     => $selectedId,
+        'selectedBarang' => $selectedBarang,
+    ];
+
+    return view('admin/tambah-barang-keluar', $data);
+}
+
+
+    public function aksi_tambah_barang_keluar()
     {
         $barangKeluarModel = new \App\Models\BarangKeluarModel();
         $barangModel       = new \App\Models\BarangModel();
